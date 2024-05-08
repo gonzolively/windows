@@ -1,0 +1,2 @@
+﻿Get-ADUser -Filter * -SearchBase "OU=Users,OU=Disabled,DC=LFILMS,DC=NET" -Properties mail |
+Where-Object {$_.mail -ne $null} | Select-Object -Property samaccountname,mail | Sort-Object -Property samaccountname
