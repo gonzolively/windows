@@ -1,6 +1,9 @@
+# Set oh-my-posh prompt
+# Use "Get-PoshThemes" to preview themes
+oh-my-posh init pwsh --config 'C:\Program Files (x86)\oh-my-posh\themes\powerlevel10k_lean.omp.json' | Invoke-Expression
+
 # Misc options
 Set-PSReadlineOption -BellStyle None                                                        #Disable bell
-
 $host.UI.RawUI.BufferSize = (New-Object System.Management.Automation.Host.Size(250,9999))   #Set scrollback buffer
 
 #Set home directory and path Powershell starts in
@@ -9,11 +12,12 @@ Set-Variable HOME C:\Users\Knox
 Set-Location C:\Users\Knox
 
 # Directories
-Set-Variable DOWNLOADS C:\Users\Knox\downloads
-Set-Variable DOCUMENTS C:\Users\Knox\documents
-Set-Variable DESKTOP C:\Users\Knox\Desktop
-Set-Variable REPOS C:\Users\Knox\Repos
-Set-Variable TOOLS C:\tools
+function downloads {Set-Location C:\Users\Knox\downloads}
+function docs {Set-Location C:\Users\Knox\documents}
+function desktop {Set-Location C:\Users\Knox\desktop}
+function home {Set-Location C:\Users\Knox}
+function repos {Set-location C:\Users\Knox\Repos}
+function tools {Set-Location C:\Users\Knox\Repos}
 
 # Config Files location
 Set-Variable VIMRC C:\tools\vim\_vimrc
@@ -23,27 +27,85 @@ Set-Alias -Name reboot -Value Restart-Computer
 Set-Alias -Name touch -Value New-Item
 
 ####################### SNAPINS & MODULES ##########################################################
-Import-Module posh-git
+# Import Modules and External Profiles
+$modules = @("Terminal-Icons", "posh-git")
 
+foreach ($module in $modules) {
+    if (-not (Get-Module -ListAvailable -Name $module)) {
+        Install-Module -Name $module -Scope CurrentUser -Force -SkipPublisherCheck
+    }
+    Import-Module $module
+}
 ####################### CUSTOM FUNCTIONS #############################################################
-function Disable-RealTimeMonitoring {
-reg add  "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" /v DisableRealtimeMonitoring /t REG_DWORD /d 1
+# Package Management
+# Function to ensure Chocolatey packages are installed
+function Ensure-ChocoPackagesInstalled {
+    # List of packages you want to ensure are installed
+    $requiredPackages = @("oh-my-posh", "vim")
+
+    # Get all currently installed Chocolatey packages
+    $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
+
+    # Loop through the required packages and check if each one is installed
+    foreach ($package in $requiredPackages) {
+        if ($installedPackages -notmatch "^$package\b") {
+            # Package is not installed, install it
+            choco install $package -y --limit-output
+        } else {
+            Write-Host "$package is already installed."
+        }
+    }
 }
 
 function ChocoUpgrade {
 choco upgrade all -y --except="vim" --ignore-checksums
 }
 
+# System Utilities
+function reload-profile {
+    & $profile
+}
+
+function unzip ($file) {
+    Write-Output("Extracting", $file, "to", $pwd)
+    $fullFile = Get-ChildItem -Path $pwd -Filter $file | ForEach-Object { $_.FullName }
+    Expand-Archive -Path $fullFile -DestinationPath $pwd
+}
+
+# Network Utilities
+function Get-PubIP { (Invoke-WebRequest http://ifconfig.me/ip).Content }
+
+function flushdns { Clear-DnsClientCache }
+
+# Linux alias'
+function grep($regex, $dir) {
+    if ( $dir ) {
+        Get-ChildItem $dir | select-string $regex
+        return
+    }
+    $input | select-string $regex
+}
+
+function df {
+    get-volume
+}
+
+function tail {
+  param($Path, $n = 10)
+  Get-Content $Path -Tail $n
+}
+
 function which($command) {
 (Get-Command $command).Path
 }
 
-function hist {
-Get-Content (Get-PSReadlineOption).HistorySavePath
-}
-
 function symlink ($target, $link) {
     New-Item -Path $link -ItemType SymbolicLink -Value $target -force
+}
+
+# General
+function hist {
+Get-Content (Get-PSReadlineOption).HistorySavePath
 }
 
 function Get-EnvironmentVariables() {
