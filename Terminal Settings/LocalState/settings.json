@@ -48,6 +48,7 @@
         "list": 
         [
             {
+                "bellStyle": "none",
                 "commandline": "%SystemRoot%\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
                 "elevate": true,
                 "font": 
