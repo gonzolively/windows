@@ -1,6 +1,7 @@
 # Set oh-my-posh prompt
 # Use "Get-PoshThemes" to preview themes
-oh-my-posh init pwsh --config 'C:\Program Files (x86)\oh-my-posh\themes\powerlevel10k_lean.omp.json' | Invoke-Expression
+#oh-my-posh init pwsh --config 'C:\Program Files (x86)\oh-my-posh\themes\iterm2.omp.json' | Invoke-Expression
+#oh-my-posh init pwsh --config 'C:\Program Files (x86)\oh-my-posh\themes\powerlevel10k_lean.omp.json' | Invoke-Expression
 
 # Misc options
 Set-PSReadlineOption -BellStyle None                                                        #Disable bell
