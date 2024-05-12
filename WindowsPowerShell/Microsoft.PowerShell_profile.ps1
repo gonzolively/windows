@@ -38,25 +38,6 @@ foreach ($module in $modules) {
 }
 ####################### CUSTOM FUNCTIONS #############################################################
 # Package Management
-# Function to ensure Chocolatey packages are installed
-function Ensure-ChocoPackagesInstalled {
-    # List of packages you want to ensure are installed
-    $requiredPackages = @("oh-my-posh", "vim")
-
-    # Get all currently installed Chocolatey packages
-    $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
-
-    # Loop through the required packages and check if each one is installed
-    foreach ($package in $requiredPackages) {
-        if ($installedPackages -notmatch "^$package\b") {
-            # Package is not installed, install it
-            choco install $package -y --limit-output
-        } else {
-            Write-Host "$package is already installed."
-        }
-    }
-}
-
 function ChocoUpgrade {
 choco upgrade all -y --except="vim" --ignore-checksums
 }
@@ -64,6 +45,10 @@ choco upgrade all -y --except="vim" --ignore-checksums
 # System Utilities
 function reload-profile {
     & $profile
+}
+
+function WinUtil {
+	iwr -useb https://christitus.com/win | iex
 }
 
 function unzip ($file) {
