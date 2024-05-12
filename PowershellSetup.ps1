@@ -3,16 +3,6 @@
 # Pre-reqs:
 # 1. Copy ssh folder (github key + configs) to local users SSH dir
 
-# Security stuff
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-
-# Install Chocolatey
-Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-
-# Install Vim and Git using Chocolatey
-choco install vim git -y
-
 # Clone windows repo
 Set-Location $env:USERPROFILE
 if (!(Test-Path -Path "Repos")) {
