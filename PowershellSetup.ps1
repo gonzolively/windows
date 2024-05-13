@@ -26,13 +26,33 @@ if (Test-Path -Path $iseProfilePath) {
 }
 New-Item -ItemType SymbolicLink -Path $iseProfilePath -Value $iseProfileTarget -Force
 
-# Vim Stuff
+### Vim Stuff
+# Copy symlink vimrc
 $vimrcPath = "C:\tools\vim\_vimrc"
 $vimrcTarget = Join-Path $env:USERPROFILE "Repos\windows\_vimrc"
 if (Test-Path -Path $vimrcPath) {
     Remove-Item -Path $vimrcPath -Force -Confirm:$false
 }
 New-Item -ItemType SymbolicLink -Path $vimrcPath -Value $vimrcTarget -Force
+
+# Check for Vundle, download if it doesn't exist.
+$vundlePath = "C:\tools\vim\vim91\Vundle.vim"
+if (-Not (Test-Path $vundlePath)) {
+    Write-Host "Vundle not found at $vundlePath. Cloning Vundle from GitHub..."
+    $gitUrl = "https://github.com/VundleVim/Vundle.vim.git"
+    git clone $gitUrl $vundlePath
+    if ($?) {
+        Write-Host "Vundle was successfully cloned to $vundlePath."
+    } else {
+        Write-Host "Failed to clone Vundle."
+    }
+} else {
+    Write-Host "Vundle is already installed at $vundlePath."
+}
+
+# Install vim plugins
+Write-Host "Installing Vim Plugins..."
+vim -E -s -u NONE -c "source $vimrcPath" -c "BundleInstall" -c "qa!"
 
 # Terminal Settings
 $terminalSettingsPath = Join-Path $env:USERPROFILE "AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
