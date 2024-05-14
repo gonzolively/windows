@@ -51,8 +51,9 @@ if (-Not (Test-Path $vundlePath)) {
 }
 
 # Install vim plugins
+$vimrcPath = "C:\tools\vim\_vimrc"
 Write-Host "Installing Vim Plugins..."
-vim -E -s -u NONE -c "source $vimrcPath" -c "BundleInstall" -c "qa!"
+vim -E -s -u "$vimrcPath" -c "BundleInstall" -c "qa!"
 
 # Terminal Settings
 $terminalSettingsPath = Join-Path $env:USERPROFILE "AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
