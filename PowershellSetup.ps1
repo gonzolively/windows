@@ -4,20 +4,19 @@
 # 1. Copy ssh folder (github key + configs) to local users SSH dir
 
 # Clone windows repo
-$repoPath=(Join-Path $env:USERPROFILE "Repos")
-$windowsRepoPath=(Join-Path $repoPath "windows")
-
-if (Test-Path -Path $repoPath) {
-	if (Test-Path -Path $windowsRepoPath)
-       Set-Location $windowsRepoPath
-	   git pull
-	else
-       Set-Location $repoPath
-       git clone git@github.com:gonzolively/windows.git
+$repoPath = Join-Path $env:USERPROFILE "Repos"
+$windowsRepoPath = Join-Path $repoPath "windows"
 
 if (!(Test-Path -Path $repoPath)) {
-    New-Item -ItemType Directory -Path $repoPath
-    git clone git@github.com:gonzolively/windows.git $repoPath
+    New-Item -ItemType Directory -Path $repoPath -Force | Out-Null
+}
+
+if (Test-Path -Path $windowsRepoPath) {
+    Set-Location $windowsRepoPath
+    git pull
+} else {
+    Set-Location $repoPath
+    git clone git@github.com:gonzolively/windows.git
 }
 
 # Symlink PowerShell Folder
