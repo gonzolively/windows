@@ -1,6 +1,4 @@
-### minimal setup script to load PowerShell configs, vimrc, and other misc tasks
-### Pre-reqs:
-# 1. Copy ssh folder (github key + configs) to local users SSH dir
+### minimal setup script to load PowerShell configs, vimrc, and other misc task
 
 # Confirm setup
 $confirmation = Read-Host "This script will set up your PowerShell configs, vimrc, and other misc tasks. Continue? (Y/N)"
