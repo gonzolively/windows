@@ -19,7 +19,7 @@ else {
 }
 
 # List of packages you want to ensure are installed
-$requiredPackages = @("oh-my-posh", "vim")
+$requiredPackages = @("oh-my-posh", "vim", "notepadplusplus.install")
 
 # Get all currently installed Chocolatey packages
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
@@ -37,3 +37,21 @@ foreach ($package in $requiredPackages) {
 
 # Run winutil
 Invoke-WebRequest -UseBasicParsing -Uri 'https://christitus.com/win' | Invoke-Expression
+
+# Prompt the user to choose whether to run the PowershellSetup.ps1 script
+$runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Y/N)"
+
+if ($runPowershellSetup -eq "Y" -or $runPowershellSetup -eq "y") {
+    # Check if the PowershellSetup.ps1 script exists in the same directory
+    $powershellSetupPath = Join-Path $PSScriptRoot "PowershellSetup.ps1"
+    if (Test-Path $powershellSetupPath) {
+        Write-Host "Running PowershellSetup.ps1 script..."
+        & $powershellSetupPath
+    }
+    else {
+        Write-Warning "PowershellSetup.ps1 script not found in the same directory."
+    }
+}
+else {
+    Write-Host "Skipping PowershellSetup.ps1 script."
+}
