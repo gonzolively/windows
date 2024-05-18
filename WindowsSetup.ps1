@@ -1,7 +1,6 @@
-# Intended to be run on a clean Windows install to set up basic packages, tools, preferences, and settings.
+### Intended to be run on a clean Windows install to set up basic packages, tools, preferences, and settings.
 
 # Security stuff
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
 
 # Check if Chocolatey is already installed
@@ -19,7 +18,7 @@ else {
 }
 
 # List of packages you want to ensure are installed
-$requiredPackages = @("oh-my-posh", "vim", "git", "notepadplusplus.install")
+$requiredPackages = @("oh-my-posh", "vim", "notepadplusplus.install")
 
 # Get all currently installed Chocolatey packages
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
