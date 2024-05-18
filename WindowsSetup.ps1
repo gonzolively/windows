@@ -19,7 +19,7 @@ else {
 }
 
 # List of packages you want to ensure are installed
-$requiredPackages = @("oh-my-posh", "vim", "notepadplusplus.install")
+$requiredPackages = @("oh-my-posh", "vim", "git", "notepadplusplus.install")
 
 # Get all currently installed Chocolatey packages
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
