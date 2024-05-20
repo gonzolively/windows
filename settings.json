@@ -1,0 +1,8 @@
+{
+    "network": {
+      "downloader": "wininet"
+    },
+    "visual": {
+        "progressBar": "rainbow"
+    }
+}

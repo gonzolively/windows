@@ -18,7 +18,7 @@ else {
 }
 
 # List of packages you want to ensure are installed
-$requiredPackages = @("oh-my-posh", "vim", "notepadplusplus.install")
+$requiredPackages = @("oh-my-posh", "vim", "git", "notepadplusplus.install")
 
 # Get all currently installed Chocolatey packages
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
@@ -34,8 +34,28 @@ foreach ($package in $requiredPackages) {
     }
 }
 
-# Run winutil
+# Winget/Winutil Stuff
+$repoSettingsFile = Join-Path $env:USERPROFILE "Repos\windows\settings.json"
+$wingetSettingsFile = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
+
+# Check if the repo's settings.json file exists
+if (Test-Path $repoSettingsFile) {
+    # Remove the existing winget settings.json file if it exists
+    if (Test-Path $wingetSettingsFile) {
+        Remove-Item $wingetSettingsFile
+    }
+
+    # Create a symbolic link from the winget settings.json file to the repo's settings.json file
+    New-Item -ItemType SymbolicLink -Path $wingetSettingsFile -Target $repoSettingsFile
+
+# Run winutil (uses winget to install packages)
 Invoke-WebRequest -UseBasicParsing -Uri 'https://christitus.com/win' | Invoke-Expression
+}
+
+else {
+    Write-Warning "The settings.json file was not found in the repo's root directory."
+    Write-Warning "Please make sure the file exists and try again."
+}
 
 # Prompt the user to choose whether to run the PowershellSetup.ps1 script
 $runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Y/N)"
