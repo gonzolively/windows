@@ -1,8 +1,5 @@
 ### Intended to be run on a clean Windows install to set up basic packages, tools, preferences, and settings.
 
-# Security stuff
-[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-
 # Check if Chocolatey is already installed
 if (-not (Get-Command -Name choco -ErrorAction SilentlyContinue)) {
     Write-Host "Chocolatey is not installed. Installing Chocolatey..."
@@ -35,18 +32,18 @@ foreach ($package in $requiredPackages) {
 }
 
 # Winget/Winutil Stuff
-$repoSettingsFile = Join-Path $env:USERPROFILE "Repos\windows\settings.json"
-$wingetSettingsFile = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
+$wingetSettingsTarget = Join-Path $env:USERPROFILE "Repos\windows\settings.json"
+$wingetSettings = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
 
 # Check if the repo's settings.json file exists
-if (Test-Path $repoSettingsFile) {
+if (Test-Path $wingetSettingsTarget) {
     # Remove the existing winget settings.json file if it exists
-    if (Test-Path $wingetSettingsFile) {
-        Remove-Item $wingetSettingsFile
+    if (Test-Path $wingetSettings) {
+        Remove-Item $wingetSettings
     }
 
     # Create a symbolic link from the winget settings.json file to the repo's settings.json file
-    New-Item -ItemType SymbolicLink -Path $wingetSettingsFile -Target $repoSettingsFile
+    New-Item -ItemType SymbolicLink -Path $wingetSettings -Target $wingetSettingsTarget
 
 # Run winutil (uses winget to install packages)
 Invoke-WebRequest -UseBasicParsing -Uri 'https://christitus.com/win' | Invoke-Expression
