@@ -58,7 +58,7 @@ New-Item -ItemType SymbolicLink -Path $terminalSettingsPath -Value $terminalSett
 ### Vim Stuff
 # Set up vimrc file
 $vimrcPath = "C:\tools\vim\_vimrc"
-$vimrcTarget = Join-Path $repoPath "windows\_vimrc"
+$vimrcTarget = Join-Path $PSScriptRoot "configs\_vimrc"
 if (Test-Path -Path $vimrcPath) {
     Remove-Item -Path $vimrcPath -Force -Confirm:$false
 }

@@ -31,8 +31,23 @@ foreach ($package in $requiredPackages) {
     }
 }
 
+# Cleanup step: Remove gvim icons from the desktop
+$gvimIconsPath = "C:\Users\Public\Desktop\gvim"
+$gvimIcons = Get-ChildItem -Path $gvimIconsPath -Filter "gvim*"
+
+if ($gvimIcons) {
+    Write-Host "Removing gvim icons from the desktop..."
+    foreach ($icon in $gvimIcons) {
+        Remove-Item -Path $icon.FullName -Force
+    }
+    Write-Host "Cleanup completed."
+}
+else {
+    Write-Host "No gvim icons found on the desktop."
+}
+
 # Winget/Winutil Stuff
-$wingetSettingsTarget = Join-Path $env:USERPROFILE "Repos\windows\settings.json"
+$wingetSettingsTarget = Join-Path $PSScriptRoot "configs\settings.json"
 $wingetSettings = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
 
 # Check if the repo's settings.json file exists
@@ -47,6 +62,10 @@ if (Test-Path $wingetSettingsTarget) {
 
 # Run winutil (uses winget to install packages)
 Invoke-WebRequest -UseBasicParsing -Uri 'https://christitus.com/win' | Invoke-Expression
+
+# In the future, remove choclatey install of packages (except vim) and pass winutl a config file with all pre-defined packages/tweaks
+# iex "& { $(irm christitus.com/win) } -Config (Join-Path $PSScriptRoot "configs\WinUtil.json") -Run"
+
 }
 
 else {
