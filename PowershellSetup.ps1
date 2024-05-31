@@ -1,11 +1,7 @@
 ### minimal setup script to load PowerShell configs, vimrc, and other misc task
 
-# Confirm setup
-$confirmation = Read-Host "This script will set up your PowerShell configs, vimrc, and other misc tasks. Continue? (Y/N)"
-if ($confirmation -ne "Y") {
-    Write-Host "Setup cancelled by the user."
-    exit
-}
+# Set git path before continueing
+$env:PATH += ";C:\Program Files\Git\cmd"
 
 # Clone windows repo
 $repoPath = Join-Path $env:USERPROFILE "Repos"
