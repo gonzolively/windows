@@ -82,4 +82,7 @@ else {
 Write-Host "Installing Vim Plugins..."
 vim -E -s -u "$vimrcPath" -c "BundleInstall" -c "qa!"
 
+# Source PowerShell profile
+. $profile
+
 Write-Host "Setup complete."
