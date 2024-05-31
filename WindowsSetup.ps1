@@ -32,7 +32,7 @@ foreach ($package in $requiredPackages) {
 }
 
 # Cleanup step: Remove gvim icons from the desktop
-$gvimIconsPath = "C:\Users\Public\Desktop\gvim"
+$gvimIconsPath = "C:\Users\Public\Desktop"
 $gvimIcons = Get-ChildItem -Path $gvimIconsPath -Filter "gvim*"
 
 if ($gvimIcons) {
