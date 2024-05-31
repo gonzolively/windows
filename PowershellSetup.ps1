@@ -82,7 +82,39 @@ else {
 Write-Host "Installing Vim Plugins..."
 vim -E -s -u "$vimrcPath" -c "BundleInstall" -c "qa!"
 
+# Install Fonts
+Write-Host "Installing fonts ..."
+$fontsFolder = Join-Path $windowsRepoPath "fonts"
+Write-Host "Fonts folder: $fontsFolder"
+
+$windowsFontsFolder = (New-Object -ComObject Shell.Application).Namespace(0x14)
+
+if (Test-Path -Path $fontsFolder) {
+	$fontFiles = Get-ChildItem -Path $fontsFolder
+    Write-Host "Found $($fontFiles.Count) font files in $fontsFolder"
+
+    foreach ($font in $fontFiles) {
+        Write-Host "Processing font file: $($font.Name)"
+        try {
+            $destinationPath = Join-Path $windowsFontsFolder $font.Name
+            if (Test-Path -Path $destinationPath) {
+                Write-Host "Font '$($font.Name)' already exists. Skipping installation."
+            }
+            else {
+                $windowsFontsFolder.CopyHere($font.FullName)
+                Write-Host "Installed font: $($font.Name)"
+            }
+        }
+        catch {
+            Write-Error "Failed to install font: $($font.Name)"
+        }
+    }
+}
+else {
+    Write-Warning "Fonts folder not found: $fontsFolder"
+}
+
 # Source PowerShell profile
 . $profile
 
-Write-Host "Setup complete."
+Write-Host "Setup complete." -ForegroundColor green
