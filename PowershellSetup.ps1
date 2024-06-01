@@ -1,5 +1,10 @@
 ### minimal setup script to load PowerShell configs, vimrc, and other misc task
 
+# Start logging
+$scriptName = $MyInvocation.MyCommand.Name
+$logFile = $scriptName + "_" + "$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+Start-Transcript -Path $logFile -Append
+
 # Set git path before continueing
 $env:PATH += ";C:\Program Files\Git\cmd"
 
@@ -117,4 +122,7 @@ else {
 # Source PowerShell profile
 . $profile
 
-Write-Host "Setup complete." -ForegroundColor green
+Write-Host "PowerShell Setup complete." -ForegroundColor green
+
+# Stop logging
+Stop-Transcript
