@@ -20,7 +20,7 @@ else {
 }
 
 # List of packages you want to ensure are installed
-$requiredPackages = @("oh-my-posh", "vim", "git", "notepadplusplus.install")
+$requiredPackages = @("vim")
 
 # Get all currently installed Chocolatey packages
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
@@ -66,10 +66,7 @@ if (Test-Path $wingetSettingsTarget) {
     New-Item -ItemType SymbolicLink -Path $wingetSettings -Target $wingetSettingsTarget
 
     # Run winutil (uses winget to install packages)
-    Invoke-WebRequest -UseBasicParsing -Uri 'https://christitus.com/win' | Invoke-Expression
-
-    # In the future, remove choclatey install of packages (except vim) and pass winutl a config file with all pre-defined packages/tweaks
-    # iex "& { $(irm christitus.com/win) } -Config (Join-Path $PSScriptRoot "configs\WinUtil.json") -Run"
+    Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config (Join-Path $PSScriptRoot "configs/winutil.json") -Run"
 }
 else {
     Write-Warning "The settings.json file was not found in the repo's root directory."
