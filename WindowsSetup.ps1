@@ -1,7 +1,8 @@
 ### Intended to be run on a clean Windows install to set up basic packages, tools, preferences, and settings.
 
 # Start logging
-$logFile = "setup_log_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+$scriptName = $MyInvocation.MyCommand.Name
+$logFile = $scriptName + "_" + "$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 Start-Transcript -Path $logFile -Append
 
 # Check if Chocolatey is already installed
@@ -91,6 +92,7 @@ if ($runPowershellSetup -eq "Y" -or $runPowershellSetup -eq "y") {
 }
 else {
     Write-Host "Skipping PowershellSetup.ps1 script."
+    Write-Host "Windows Setup complete." -ForegroundColor green
 }
 
 # Stop logging
