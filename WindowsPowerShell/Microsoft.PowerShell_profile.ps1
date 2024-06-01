@@ -8,7 +8,6 @@ Set-PSReadlineOption -BellStyle None                                            
 $host.UI.RawUI.BufferSize = (New-Object System.Management.Automation.Host.Size(250,9999))   #Set scrollback buffer
 
 #Set home directory and path Powershell starts in
-Set-Variable HOME C:\Users\Knox
 Set-Location C:\Users\Knox
 
 # Directories
