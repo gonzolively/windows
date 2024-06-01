@@ -52,21 +52,22 @@ else {
 }
 
 # Winget/Winutil Stuff
-$wingetSettingsTarget = Join-Path $PSScriptRoot "configs\settings.json"
-$wingetSettings = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
+$wingetSettings = Join-Path $PSScriptRoot "configs\settings.json"
+$wingetSettingsTarget = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
+$winutilSettings = Join-Path $PSScriptRoot "configs\winutil.json"
 
 # Check if the repo's settings.json file exists
-if (Test-Path $wingetSettingsTarget) {
+if (Test-Path $wingetSettings) {
     # Remove the existing winget settings.json file if it exists
-    if (Test-Path $wingetSettings) {
-        Remove-Item $wingetSettings
+    if (Test-Path $wingetSettingsTarget) {
+        Remove-Item $wingetSettingsTarget
     }
 
-    # Create a symbolic link from the winget settings.json file to the repo's settings.json file
-    New-Item -ItemType SymbolicLink -Path $wingetSettings -Target $wingetSettingsTarget
+    # Copy over winget Settings
+    Copy-Item -Path $wingetSettings -Destination $wingetSettingsTarget
 
     # Run winutil (uses winget to install packages)
-    Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config (Join-Path $PSScriptRoot "configs/winutil.json") -Run"
+    Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
 }
 else {
     Write-Warning "The settings.json file was not found in the repo's root directory."
