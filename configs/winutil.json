@@ -1,0 +1,46 @@
+{
+    "WPFTweaks":  [
+                      "WPFTweaksWifi",
+                      "WPFTweaksHome",
+                      "WPFTweaksStorage",
+                      "WPFTweaksHiber",
+                      "WPFTweaksDVR",
+                      "WPFTweaksTele",
+                      "WPFTweaksDisplay",
+                      "WPFTweaksAH",
+                      "WPFTweaksLoc",
+                      "WPFTweaksRemoveOnedrive",
+                      "WPFTweaksOO",
+                      "WPFTweaksDiskCleanup",
+                      "WPFTweaksTeredo",
+                      "WPFTweaksDeleteTempFiles",
+                      "WPFTweaksServices"
+                  ],
+    "Install":  [
+                    "JanDeDobbeleer.OhMyPosh",
+                    "sharkdp.bat",
+                    "Notepad++.Notepad++",
+                    "Foxit.FoxitReader",
+                    "Brave.Brave",
+                    "7zip.7zip",
+                    "Git.Git",
+                    "Microsoft.VisualStudioCode",
+                    "WinDirStat.WinDirStat",
+                    "Git.Git",
+                    "JesseDuffield.lazygit"
+                ],
+    "WPFInstall":  [
+                       "WPFInstallposh",
+                       "WPFInstallbat",
+                       "WPFInstallnotepadplus",
+                       "WPFInstallfoxpdfreader",
+                       "WPFInstallbrave",
+                       "WPFInstall7zip",
+                       "WPFInstallvscode",
+                       "WPFInstallwindirstat",
+                       "WPFInstallgit",
+                       "WPFInstalllazygit"
+                   ],
+    "WPFFeature":  [
+                   ]
+}
