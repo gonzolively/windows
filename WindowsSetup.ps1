@@ -1,5 +1,9 @@
 ### Intended to be run on a clean Windows install to set up basic packages, tools, preferences, and settings.
 
+# Start logging
+$logFile = "setup_log_$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
+Start-Transcript -Path $logFile -Append
+
 # Check if Chocolatey is already installed
 if (-not (Get-Command -Name choco -ErrorAction SilentlyContinue)) {
     Write-Host "Chocolatey is not installed. Installing Chocolatey..."
@@ -60,14 +64,12 @@ if (Test-Path $wingetSettingsTarget) {
     # Create a symbolic link from the winget settings.json file to the repo's settings.json file
     New-Item -ItemType SymbolicLink -Path $wingetSettings -Target $wingetSettingsTarget
 
-# Run winutil (uses winget to install packages)
-Invoke-WebRequest -UseBasicParsing -Uri 'https://christitus.com/win' | Invoke-Expression
+    # Run winutil (uses winget to install packages)
+    Invoke-WebRequest -UseBasicParsing -Uri 'https://christitus.com/win' | Invoke-Expression
 
-# In the future, remove choclatey install of packages (except vim) and pass winutl a config file with all pre-defined packages/tweaks
-# iex "& { $(irm christitus.com/win) } -Config (Join-Path $PSScriptRoot "configs\WinUtil.json") -Run"
-
+    # In the future, remove choclatey install of packages (except vim) and pass winutl a config file with all pre-defined packages/tweaks
+    # iex "& { $(irm christitus.com/win) } -Config (Join-Path $PSScriptRoot "configs\WinUtil.json") -Run"
 }
-
 else {
     Write-Warning "The settings.json file was not found in the repo's root directory."
     Write-Warning "Please make sure the file exists and try again."
@@ -90,3 +92,6 @@ if ($runPowershellSetup -eq "Y" -or $runPowershellSetup -eq "y") {
 else {
     Write-Host "Skipping PowershellSetup.ps1 script."
 }
+
+# Stop logging
+Stop-Transcript
