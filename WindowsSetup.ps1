@@ -1,11 +1,11 @@
 ### Intended to be run on a clean Windows install to set up basic packages, tools, preferences, and settings.
 
-# Start logging
+### Start logging
 $scriptName = $MyInvocation.MyCommand.Name
 $logFile = $scriptName + "_" + "$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 Start-Transcript -Path $logFile -Append
 
-# Activate Windows
+### Activate Windows
 $confirmActivation = Read-Host "Do you want to activate Windows? (Yes/No)"
 
 if ($confirmActivation -eq "Yes" -or $confirmActivation -eq "Y") {
@@ -16,13 +16,11 @@ else {
     Write-Host "Windows activation skipped."
 }
 
-
-# Check if Chocolatey is already installed
+### Install Cholatey
 Write-Host "Checking to see if Choclatey is installed..."
 if (-not (Get-Command -Name choco -ErrorAction SilentlyContinue)) {
     Write-Host "Chocolatey is not installed. Installing Chocolatey..."
 
-    # Install Chocolatey
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
@@ -32,18 +30,14 @@ else {
     Write-Host "Chocolatey is already installed."
 }
 
-# List of packages you want to ensure are installed
+### Install Choclatey packages
 $requiredPackages = @("vim")
-
-# Get all currently installed Chocolatey packages
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
 
 Write-Host "Installing Choclatey packages..."
 
-# Loop through the required packages and check if each one is installed
 foreach ($package in $requiredPackages) {
     if ($installedPackages -notmatch "^$package\b") {
-        # Package is not installed, install it
         choco install $package -y --limit-output
     }
     else {
@@ -51,7 +45,7 @@ foreach ($package in $requiredPackages) {
     }
 }
 
-# Cleanup step: Remove gvim icons from the desktop
+### Cleanup step: Remove gvim icons from the desktop
 $gvimIconsPath = "C:\Users\Public\Desktop"
 $gvimIcons = Get-ChildItem -Path $gvimIconsPath -Filter "gvim*"
 
@@ -66,7 +60,7 @@ else {
     Write-Host "No gvim icons found on the desktop."
 }
 
-# Winget/Winutil Stuff
+### Winget/Winutil Stuff
 $wingetSettings = Join-Path $PSScriptRoot "configs\settings.json"
 $wingetSettingsTarget = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
 $winutilSettings = Join-Path $PSScriptRoot "configs\winutil.json"
@@ -79,10 +73,8 @@ if (Test-Path $wingetSettings) {
         Remove-Item $wingetSettingsTarget
     }
 
-    # Copy over winget Settings
     Copy-Item -Path $wingetSettings -Destination $wingetSettingsTarget
 
-    # Run winutil (uses winget to install packages)
     Write-Host "Running WinUtil..."
     Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
 }
@@ -91,7 +83,7 @@ else {
     Write-Warning "Please make sure the file exists and try again."
 }
 
-# Prompt the user to choose whether to run the PowershellSetup.ps1 script
+### Prompt the user to choose whether to run the PowershellSetup.ps1 script
 $runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Y/N)"
 
 if ($runPowershellSetup -eq "Y" -or $runPowershellSetup -eq "y") {
@@ -110,5 +102,5 @@ else {
     Write-Host "Windows Setup complete." -ForegroundColor green
 }
 
-# Stop logging
+### Stop logging
 Stop-Transcript
