@@ -1,14 +1,15 @@
 ### minimal setup script to load PowerShell configs, vimrc, and other misc task
 
-# Start logging
+### Start logging
 $scriptName = $MyInvocation.MyCommand.Name
 $logFile = $scriptName + "_" + "$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 Start-Transcript -Path $logFile -Append
 
-# Set git path before continueing
+### Set git path before continueing
 $env:PATH += ";C:\Program Files\Git\cmd"
 
-# Clone windows repo
+### Clone windows repo
+Write-Host "Cloning windows repo..."
 $repoPath = Join-Path $env:USERPROFILE "Repos"
 $windowsRepoPath = Join-Path $repoPath "windows"
 
@@ -32,7 +33,8 @@ else {
     git clone git@github.com:gonzolively/windows.git
 }
 
-# Symlink PowerShell Folder
+### Symlink PowerShell Folder
+Write-Host "Symlinking PowerShell folder..."
 $powershellFolder = Join-Path $env:USERPROFILE "Documents\WindowsPowerShell"
 $powershellTarget = Join-Path $windowsRepoPath "WindowsPowerShell"
 if (Test-Path -Path $powershellFolder) {
@@ -40,7 +42,8 @@ if (Test-Path -Path $powershellFolder) {
 }
 New-Item -ItemType SymbolicLink -Path $powershellFolder -Value $powershellTarget -Force | Out-Null
 
-# Symlink PowerShell profile to ISE profile
+### Symlink PowerShell profile to ISE profile
+Write-Host "Symlinking PowerShell ISE profile..."
 $iseProfilePath = Join-Path $powershellFolder "Microsoft.PowerShellISE_profile.ps1"
 $iseProfileTarget = Join-Path $windowsRepoPath "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
 if (Test-Path -Path $iseProfilePath) {
@@ -48,7 +51,8 @@ if (Test-Path -Path $iseProfilePath) {
 }
 New-Item -ItemType SymbolicLink -Path $iseProfilePath -Value $iseProfileTarget -Force | Out-Null
 
-# Symlink Terminal Settings
+### Symlink Terminal Settings
+Write-Host "Symlinking terminal settings..."
 $terminalSettingsPath = Join-Path $env:USERPROFILE "AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
 $terminalSettingsTarget = Join-Path $windowsRepoPath "Terminal Settings\LocalState"
 if (Test-Path -Path $terminalSettingsPath) {
@@ -58,6 +62,7 @@ New-Item -ItemType SymbolicLink -Path $terminalSettingsPath -Value $terminalSett
 
 ### Vim Stuff
 # Set up vimrc file
+Write-Host "Symlinking vimrc..."
 $vimrcPath = "C:\tools\vim\_vimrc"
 $vimrcTarget = Join-Path $PSScriptRoot "configs\_vimrc"
 if (Test-Path -Path $vimrcPath) {
@@ -66,6 +71,7 @@ if (Test-Path -Path $vimrcPath) {
 New-Item -ItemType SymbolicLink -Path $vimrcPath -Value $vimrcTarget -Force | Out-Null
 
 # Check for Vundle, download if it doesn't exist.
+Write-Host "Installing Vundle..."
 $vundlePath = "C:\tools\vim\vim91\Vundle.vim"
 if (-Not (Test-Path $vundlePath)) {
     Write-Host "Vundle not found at $vundlePath. Cloning Vundle from GitHub..."
@@ -83,11 +89,11 @@ else {
     Write-Host "Vundle is already installed at $vundlePath."
 }
 
-# Install vim plugins with bundle
+### Install vim plugins with bundle
 Write-Host "Installing Vim Plugins..."
 vim -E -s -u "$vimrcPath" -c "BundleInstall" -c "qa!"
 
-# Install Fonts
+### Install Fonts
 Write-Host "Installing fonts ..."
 $fontsFolder = Join-Path $windowsRepoPath "fonts"
 Write-Host "Fonts folder: $fontsFolder"
@@ -119,10 +125,31 @@ else {
     Write-Warning "Fonts folder not found: $fontsFolder"
 }
 
-# Source PowerShell profile
+### Set default font
+$defaultFont = "Hack Nerd Font Mono"
+Write-Host "Setting default font to " -NoNewline; Write-Host $defaultFont -ForegroundColor Yellow; Write-Host "..."
+
+if (!(Get-Module -ListAvailable -Name WindowsConsoleFonts)) {
+    Write-Host "WindowsConsoleFonts module not found. Installing..."
+
+    Install-Module -Name WindowsConsoleFonts -Scope CurrentUser -Force
+
+    Write-Host "WindowsConsoleFonts module installed successfully..."
+}
+
+try {
+    Set-ConsoleFont $defaultFont
+    Write-Host "Default font set to " -NoNewline; Write-Host $defaultFont -ForegroundColor Yellow
+}
+catch {
+    Write-Host "Failed to set the console font. Error: $($_.Exception.Message)"
+}
+
+### Source PowerShell profile
+Write-Host "Sourcing PowerShell Profile..."
 . $profile
 
 Write-Host "PowerShell Setup complete." -ForegroundColor green
 
-# Stop logging
+### Stop logging
 Stop-Transcript
