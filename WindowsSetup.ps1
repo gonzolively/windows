@@ -65,10 +65,8 @@ $wingetSettings = Join-Path $PSScriptRoot "configs\settings.json"
 $wingetSettingsTarget = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
 $winutilSettings = Join-Path $PSScriptRoot "configs\winutil.json"
 
-# Check if the repo's settings.json file exists
 Write-Host "Adding winget settings to system..."
 if (Test-Path $wingetSettings) {
-    # Remove the existing winget settings.json file if it exists
     if (Test-Path $wingetSettingsTarget) {
         Remove-Item $wingetSettingsTarget
     }
@@ -87,7 +85,6 @@ else {
 $runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Y/N)"
 
 if ($runPowershellSetup -eq "Y" -or $runPowershellSetup -eq "y") {
-    # Check if the PowershellSetup.ps1 script exists in the same directory
     $powershellSetupPath = Join-Path $PSScriptRoot "PowershellSetup.ps1"
     if (Test-Path $powershellSetupPath) {
         Write-Host "Running PowershellSetup.ps1 script..."
