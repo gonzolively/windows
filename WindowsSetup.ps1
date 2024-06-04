@@ -5,7 +5,20 @@ $scriptName = $MyInvocation.MyCommand.Name
 $logFile = $scriptName + "_" + "$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 Start-Transcript -Path $logFile -Append
 
+# Activate Windows
+$confirmActivation = Read-Host "Do you want to activate Windows? (Yes/No)"
+
+if ($confirmActivation -eq "Yes" -or $confirmActivation -eq "Y") {
+    Write-Host "Activating Windows..."
+    irm https://get.activated.win | iex
+}
+else {
+    Write-Host "Windows activation skipped."
+}
+
+
 # Check if Chocolatey is already installed
+Write-Host "Checking to see if Choclatey is installed..."
 if (-not (Get-Command -Name choco -ErrorAction SilentlyContinue)) {
     Write-Host "Chocolatey is not installed. Installing Chocolatey..."
 
@@ -24,6 +37,8 @@ $requiredPackages = @("vim")
 
 # Get all currently installed Chocolatey packages
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
+
+Write-Host "Installing Choclatey packages..."
 
 # Loop through the required packages and check if each one is installed
 foreach ($package in $requiredPackages) {
@@ -57,6 +72,7 @@ $wingetSettingsTarget = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstalle
 $winutilSettings = Join-Path $PSScriptRoot "configs\winutil.json"
 
 # Check if the repo's settings.json file exists
+Write-Host "Adding winget settings to system..."
 if (Test-Path $wingetSettings) {
     # Remove the existing winget settings.json file if it exists
     if (Test-Path $wingetSettingsTarget) {
@@ -67,6 +83,7 @@ if (Test-Path $wingetSettings) {
     Copy-Item -Path $wingetSettings -Destination $wingetSettingsTarget
 
     # Run winutil (uses winget to install packages)
+    Write-Host "Running WinUtil..."
     Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
 }
 else {
