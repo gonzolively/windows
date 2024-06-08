@@ -62,33 +62,42 @@ else {
 }
 
 ### Winget/Winutil Stuff
-$wingetSettings = Join-Path $PSScriptRoot "configs\settings.json"
-$wingetSettingsTarget = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
-$winutilSettings = Join-Path $PSScriptRoot "configs\winutil.json"
+$confirmWinUtil = Read-Host "Do you want to run WinUtil? (Yes/No)"
 
-Write-Host "Adding winget settings to system..."
-if (Test-Path $wingetSettings) {
-    if (Test-Path $wingetSettingsTarget) {
-        Remove-Item $wingetSettingsTarget
+if ($confirmWinUtil -eq "Yes" -or $confirmWinUtil -eq "Y") {
+    Write-Host "Activating Windows..."
+    $wingetSettings = Join-Path $PSScriptRoot "configs\settings.json"
+    $wingetSettingsTarget = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
+    $winutilSettings = Join-Path $PSScriptRoot "configs\winutil.json"
+
+    Write-Host "Adding winget settings to system..."
+    if (Test-Path $wingetSettings) {
+        if (Test-Path $wingetSettingsTarget) {
+            Remove-Item $wingetSettingsTarget
+        }
+
+        Copy-Item -Path $wingetSettings -Destination $wingetSettingsTarget
+
+        Write-Host "Running WinUtil..."
+        Invoke-RestMethod -useb https://christitus.com/win | iex
+        # Disabling auto-config for now, not entirely sure I want these defaults to always run.
+        #Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
     }
-
-    Copy-Item -Path $wingetSettings -Destination $wingetSettingsTarget
-
-    Write-Host "Running WinUtil..."
-    
-    Invoke-RestMethod -useb https://christitus.com/win | iex
-    # Disabling auto-config for now, not entirely sure I want these defaults to always run.
-    #Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
+    else {
+        Write-Warning "The settings.json file was not found in the repo's root directory."
+        Write-Warning "Please make sure the file exists and try again."
+    }
 }
+
 else {
-    Write-Warning "The settings.json file was not found in the repo's root directory."
-    Write-Warning "Please make sure the file exists and try again."
+    Write-Host "WinUtil skipped."
 }
+
 
 ### Prompt the user to choose whether to run the PowershellSetup.ps1 script
-$runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Y/N)"
+$runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Yes/No)"
 
-if ($runPowershellSetup -eq "Y" -or $runPowershellSetup -eq "y") {
+if ($runPowershellSetup -eq "Yes" -or $runPowershellSetup -eq "Y") {
     $powershellSetupPath = Join-Path $PSScriptRoot "PowershellSetup.ps1"
     if (Test-Path $powershellSetupPath) {
         Write-Host "Running PowershellSetup.ps1 script..."
