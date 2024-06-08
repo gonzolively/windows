@@ -33,18 +33,46 @@ else {
     git clone git@github.com:gonzolively/windows.git
 }
 
-### Symlink PowerShell Folder
-Write-Host "Symlinking PowerShell folder..."
-$powershellFolder = Join-Path $env:USERPROFILE "Documents\WindowsPowerShell"
-$powershellTarget = Join-Path $windowsRepoPath "WindowsPowerShell"
-if (Test-Path -Path $powershellFolder) {
-    Remove-Item -Path $powershellFolder -Force -Recurse -Confirm:$false
+### Install PowerShell 7
+Write-Host "Installing PowerShell 7..."
+winget install --id Microsoft.Powershell --source winget
+
+### Symlink Windows PowerShell Profile
+Write-Host "Symlinking Windows PowerShell profile..."
+$windowsPowershellFolder = Join-Path $env:USERPROFILE "Documents\WindowsPowerShell"
+$windowsPowershellTarget = Join-Path $windowsRepoPath "WindowsPowerShell"
+if (Test-Path -Path $windowsPowershellFolder) {
+    Remove-Item -Path $windowsPowershellFolder -Force -Recurse -Confirm:$false
 }
-New-Item -ItemType SymbolicLink -Path $powershellFolder -Value $powershellTarget -Force | Out-Null
+New-Item -ItemType SymbolicLink -Path $windowsPowershellFolder -Value $windowsPowershellTarget -Force | Out-Null
+
+### Symlink Windows 7 PowerShell Profile
+Write-Host "Symlinking Windows 7 PowerShell profile..."
+$windowsPowershell7Folder = Join-Path $env:USERPROFILE "Documents\PowerShell"
+$windowsPowershell7ProfileSource = Join-Path $windowsRepoPath "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+$windowsPowershell7ProfileTarget = Join-Path $windowsPowershell7Folder "Microsoft.PowerShell_profile.ps1"
+
+if (!(Test-Path -Path $windowsPowershell7Folder)) {
+    New-Item -ItemType Directory -Path $windowsPowershell7Folder -Force | Out-Null
+    Write-Host "Created $windowsPowershell7Folder..."
+}
+
+if (Test-Path -Path $windowsPowershell7ProfileTarget) {
+    Write-Host "Removing existing PowerShell 7 profile ..."
+    Remove-Item -Path $windowsPowershell7ProfileTarget -Force
+}
+
+try {
+    New-Item -ItemType SymbolicLink -Path $windowsPowershell7ProfileTarget -Value $windowsPowershell7ProfileSource -Force | Out-Null
+    Write-Host "Created symbolic link for PowerShell 7 profile."
+}
+catch {
+    Write-Error "Failed to create symbolic link for PowerShell 7 profile. Error: $($_.Exception.Message)"
+}
 
 ### Symlink PowerShell profile to ISE profile
 Write-Host "Symlinking PowerShell ISE profile..."
-$iseProfilePath = Join-Path $powershellFolder "Microsoft.PowerShellISE_profile.ps1"
+$iseProfilePath = Join-Path $windowsPowershellFolder "Microsoft.PowerShellISE_profile.ps1"
 $iseProfileTarget = Join-Path $windowsRepoPath "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
 if (Test-Path -Path $iseProfilePath) {
     Remove-Item -Path $iseProfilePath -Force -Confirm:$false
@@ -147,7 +175,18 @@ catch {
 
 ### Source PowerShell profile
 Write-Host "Sourcing PowerShell Profile..."
-. $profile
+if ($PSVersionTable.PSVersion.Major -ge 7) {
+    $profilePath = Join-Path $powershellFolder "Microsoft.PowerShell_profile.ps1"
+} else {
+    $profilePath = Join-Path $windowsPowershellFolder "Microsoft.PowerShell_profile.ps1"
+}
+
+if (Test-Path -Path $profilePath) {
+    . $profilePath
+    Write-Host "PowerShell Profile sourced successfully."
+} else {
+    Write-Warning "PowerShell Profile not found at $profilePath"
+}
 
 Write-Host "PowerShell Setup complete." -ForegroundColor green
 
