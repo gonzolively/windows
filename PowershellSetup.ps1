@@ -33,9 +33,25 @@ else {
     git clone git@github.com:gonzolively/windows.git
 }
 
-### Install PowerShell 7
-Write-Host "Installing PowerShell 7..."
-winget install --id Microsoft.Powershell --source winget
+### Check if PowerShell 7 is installed
+Write-Host "Checking if PowerShell 7 is installed..."
+
+$powershell7Info = winget list --id Microsoft.Powershell --exact --accept-source-agreements --source winget
+if ($powershell7Info -match "Microsoft.PowerShell") {
+    Write-Host "PowerShell 7 is already installed."
+}
+else {
+    ### Install PowerShell 7
+    Write-Host "PowerShell 7 is not installed. Installing..."
+    winget install --id Microsoft.Powershell --source winget --accept-source-agreements --accept-package-agreements
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "PowerShell 7 installed successfully."
+    }
+    else {
+        Write-Error "Failed to install PowerShell 7. Exit code: $LASTEXITCODE"
+        exit 1
+    }
+}
 
 ### Symlink Windows PowerShell Profile
 Write-Host "Symlinking Windows PowerShell profile..."
