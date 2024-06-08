@@ -31,7 +31,8 @@ else {
 }
 
 ### Install Choclatey packages
-$requiredPackages = @("vim")
+$requiredPackages = @("oh-my-posh", "vim", "git", "notepadplusplus.install")
+
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
 
 Write-Host "Installing Choclatey packages..."
