@@ -5,7 +5,7 @@
 
 # Misc options
 Set-PSReadlineOption -BellStyle None                                                        #Disable bell
-$host.UI.RawUI.BufferSize = (New-Object System.Management.Automation.Host.Size(250,9999))   #Set scrollback buffer
+$host.UI.RawUI.BufferSize = (New-Object System.Management.Automation.Host.Size(120,3000))   #Set scrollback buffer
 
 #Set home directory and path Powershell starts in
 Set-Location C:\Users\Knox
