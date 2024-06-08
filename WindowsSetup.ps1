@@ -61,6 +61,19 @@ else {
     Write-Host "No gvim icons found on the desktop."
 }
 
+### Check and install NuGet package provider
+Write-Host "Checking if NuGet package provider is installed..."
+if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) {
+    Write-Host "NuGet package provider is not installed. Installing..."
+
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Install-PackageProvider -Name NuGet -Force
+    Write-Host "NuGet package provider has been installed successfully."
+}
+else {
+    Write-Host "NuGet package provider is already installed."
+}
+
 ### Winget/Winutil Stuff
 $confirmWinUtil = Read-Host "Do you want to run WinUtil? (Yes/No)"
 
@@ -92,7 +105,6 @@ if ($confirmWinUtil -eq "Yes" -or $confirmWinUtil -eq "Y") {
 else {
     Write-Host "WinUtil skipped."
 }
-
 
 ### Prompt the user to choose whether to run the PowershellSetup.ps1 script
 $runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Yes/No)"
