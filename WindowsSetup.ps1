@@ -74,7 +74,10 @@ if (Test-Path $wingetSettings) {
     Copy-Item -Path $wingetSettings -Destination $wingetSettingsTarget
 
     Write-Host "Running WinUtil..."
-    Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
+    
+    Invoke-RestMethod -useb https://christitus.com/win | iex
+    # Disabling auto-config for now, not entirely sure I want these defaults to always run.
+    #Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
 }
 else {
     Write-Warning "The settings.json file was not found in the repo's root directory."
