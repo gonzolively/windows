@@ -1,4 +1,4 @@
-﻿# ----------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------
 # Script:   TotallyWorking.ps1 
 # Author:   klively 
 # Date:     10/28/2014 17:12:14 
@@ -6,165 +6,157 @@
 # background.  After keeping awake for N minutes the computer will then lock itself.
 # ----------------------------------------------------------------------------------
 
-Import-Module AWSPowerShell
 $ErrorActionPreference = 'SilentlyContinue'
-$time=Get-Date
-$DomainLockoutTimeInMinutes=15
-$minutes=Read-Host "`nHow many minutes would you like to keep the computer active?"
-$newtime=($time.AddMinutes($minutes))
-$autolocktime=($newtime.AddMinutes($DomainLockoutTimeInMinutes)).ToString("HH:mm:ss")
-$newtimetostring=($time.AddMinutes($minutes)).ToString("HH:mm:ss")
-[string]$actioncolor= 'Red'
-[string]$timecolor= 'Yellow'
-$scriptname = $MyInvocation.MyCommand.Name
+$time = Get-Date
+$minutes = Read-Host "`nHow many minutes would you like to keep the computer active?"
+$newtime = ($time.AddMinutes($minutes))
+$newtimetostring =($time.AddMinutes($minutes)).ToString("HH:mm:ss")
+$actioncolor = 'Red'
+$timecolor = 'Yellow'
 
- Function Set-SpeakerVolume {
-
- param (
- [Parameter(Mandatory=$true)]
- [ValidateSet('Up','Down')]
- [string]$Direction,
- [Parameter(Mandatory=$true)]
- [ValidateSet('10','20','30','40','50','60','70','80','90')]
- [int]$Amt
- )
-
-  $wshShell = new-object -com wscript.shell
-
-  if ($Direction -match 'Up')
-  { while ($i -le $Amt/2){ $i++;
-  $wshShell.SendKeys([char]175)
-  }
-  }
-  
-  if ($direction -match 'Down') 
-  { while ($i -le $Amt/2){$i++;
-  $wshShell.SendKeys([char]174)
-  }
-  }
-}
-
+# Figure out what to do with these later, specifically get domain lockout time with powershell
+$DomainLockoutTimeInMinutes = 15
+$textWarningMinutes = 10
 
 Function Lock-WorkStation {
 $signature = @"
 [DllImport("user32.dll", SetLastError = true)]
 public static extern bool LockWorkStation();
 "@
-$LockWorkStation = Add-Type -memberDefinition $signature -name "Win32LockWorkStation" -namespace Win32Functions -passthru
+$LockWorkStation = Add-Type -memberDefinition $signature -name"Win32LockWorkStation" -namespace Win32Functions -passthru
 $LockWorkStation::LockWorkStation() | Out-Null
 }
 
-try 
-{
-$choice=Read-Host "`nWould you like to hibernate(h), sleep(s), lock (l), or power down (p) the computer afterwards, or neither (n)?  (h/s/l/n/p)"
+Function Set-SpeakerVolume {
+    param (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('Up', 'Down')]
+        [string]$Direction,
+        [Parameter(Mandatory = $true)]
+        [ValidateRange(0, 100)]
+        [int]$Amt
+    )
 
-If ($choice -eq 'n'){
-Write-host "`nCurrent time is " -nonewline
-Write-Host $time.ToSTring("HH:mm:ss") -ForegroundColor Yellow -nonewline
-$autolocktime=($newtime.AddMinutes($DomainLockoutTimeInMinutes)).ToString("HH:mm:ss")
-Write-host ", your computer will stay active until " -NoNewline
-Write-Host $newtimetostring -ForegroundColor Yellow -nonewline
-write-host " and " -NoNewline 
-write-host "autolock" -NoNewline -ForegroundColor $actioncolor
-write-host " at " -nonewline 
-write-host $autolocktime -foregroundColor $timecolor -NoNewline
-write-host " (Per domain policy)`n"
+    $wshShell = New-Object -ComObject Wscript.Shell
+    1..($Amt / 2) | ForEach-Object {
+        if ($Direction -eq 'Up') {
+            $wshShell.SendKeys([char]175)
+        }
+        else {
+            $wshShell.SendKeys([char]174)
+        }
+    }
 }
 
-elseIf ($choice -eq 'h'){
+### Program Begins
+try {
+$currentVolume = (Get-AudioDevice -PlaybackVolume).Volume
+Set-SpeakerVolume -Direction Up -Amt 100
 
-Write-host "`nCurrent time is " -nonewline
-Write-Host $time.ToSTring("HH:mm:ss") -ForegroundColor Yellow -nonewline
-$autolocktime=($newtime.AddMinutes($DomainLockoutTimeInMinutes)).ToString("HH:mm:ss")
-Write-host ", your computer will stay active until " -NoNewline
+$choice = Read-Host "`nWould you like to hibernate(h), sleep(s), lock (l), or power down (p) the computer afterwards, or neither (n)?"
+Write-Host "`nCurrent time is " -NoNewline
+Write-Host $time.ToString("HH:mm:ss") -ForegroundColor Yellow -NoNewline
+
+switch ($choice) {
+'n' {
+Write-Host ", your computer will stay active until " -NoNewline
+Write-Host $newtimetostring -ForegroundColor Yellow -NoNewline
+Write-Host "." -NoNewline
+$actionMessage = "automatically locks (per domain policy)"
+}
+'h' {
+Write-Host ", your computer will stay active until " -NoNewline
 Write-Host $newtimetostring -ForegroundColor $timecolor -NoNewline
-write-host " and then " -NoNewline
-write-host "hibernate" -ForegroundColor $actioncolor
+Write-Host " and then " -NoNewline
+Write-Host "hibernates." -ForegroundColor $actioncolor
+$actionMessage = "hibernates"
 }
-
-elseIf ($choice -eq 's'){
-Write-host "`nCurrent time is " -nonewline
-Write-Host $time.ToSTring("HH:mm:ss") -ForegroundColor Yellow -nonewline
-$autolocktime=($newtime.AddMinutes($DomainLockoutTimeInMinutes)).ToString("HH:mm:ss")
-Write-host ", your computer will stay active until " -NoNewline
+'s' {
+Write-Host ", your computer will stay active until " -NoNewline
 Write-Host $newtimetostring -ForegroundColor $timecolor -NoNewline
-write-host " and then " -NoNewline
-write-host "sleep" -ForegroundColor $actioncolor
+Write-Host " and then " -NoNewline
+Write-Host "sleeps." -ForegroundColor $actioncolor
+$actionMessage = "sleeps"
 }
-
-elseIf ($choice -eq 'l'){
-Write-host "`nCurrent time is " -nonewline
-Write-Host $time.ToSTring("HH:mm:ss") -ForegroundColor Yellow -nonewline
-$autolocktime=($newtime.AddMinutes($DomainLockoutTimeInMinutes)).ToString("HH:mm:ss")
-Write-host ", your computer will stay active until " -NoNewline
+'l' {
+Write-Host ", your computer will stay active until " -NoNewline
 Write-Host $newtimetostring -ForegroundColor $timecolor -NoNewline
-write-host " and then " -NoNewline
-write-host "lock" -ForegroundColor $actioncolor
+Write-Host " and then " -NoNewline
+Write-Host "locks." -ForegroundColor $actioncolor
+$actionMessage = "locks"
 }
-
-elseIf ($choice -eq 'p'){
-Write-host "`nCurrent time is " -nonewline
-Write-Host $time.ToSTring("HH:mm:ss") -ForegroundColor Yellow -nonewline
-$autolocktime=($newtime.AddMinutes($DomainLockoutTimeInMinutes)).ToString("HH:mm:ss")
-Write-host ", your computer will stay active until " -NoNewline
+'p' {
+Write-Host ", your computer will stay active until " -NoNewline
 Write-Host $newtimetostring -ForegroundColor $timecolor -NoNewline
-write-host " and then " -NoNewline
-write-host "power off" -ForegroundColor $actioncolor
+Write-Host " and then " -NoNewline
+Write-Host "power off." -ForegroundColor $actioncolor
+$actionMessage = 'powers off'
+}
 }
 
-$myshell = New-Object -com "Wscript.Shell"
-Set-SpeakerVolume -Direction Up -Amt 50
+# Send text message to alert user that their computer will resume normal functionality
+Function Send-TextMessage {
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$Message
+    )
 
+    $accountSid = "YOUR_TWILIO_ACCOUNT_SID"
+    $authToken = "YOUR_TWILIO_AUTH_TOKEN"
+    $fromNumber = "9365468667"
+    $toNumber = "9365468667"
+
+    $twilioUrl = "https://api.twilio.com/2010-04-01/Accounts/$accountSid/Messages.json"
+
+    $twilioBody = @{
+        From = $fromNumber
+        To   = $toNumber
+        Body = $Message
+    }
+
+    Invoke-RestMethod -Method Post -Uri $twilioUrl -Body $twilioBody -Authentication Basic -Credential (New-Object System.Management.Automation.PSCredential ($accountSid, (ConvertTo-SecureString $authToken -AsPlainText -Force)))
+}
+
+# Will rework this in the future
+#$wshShell = New-Object -ComObject Wscript.Shell
+#for ($i = 0; $i -lt $minutes; $i++) {
+#    if ($minutes - $i -eq $textWarningMinutes) {
+#        # Send text message alert
+#        $totalTimeUntilAction = $textWarningMinutes + $DomainLockoutTimeInMinutes
+#        $message = "`n$textWarningMinutes minutes or less until the computer resumes, and $totalTimeUntilAction minutes until it $actionMessage."
+#        Send-TextMessage -Message $message
+#    }
+#    else {
+#        Start-Sleep -Seconds 60
+#        $wshShell.SendKeys("{SCROLLLOCK}")
+#    }
+#}
+
+$wshShell = New-Object -ComObject Wscript.Shell
 for ($i = 0; $i -lt $minutes; $i++) {
-
-  if ($minutes - $i -eq 10){
- # Send Alert
- $smtpServer = "mail.crossview.inc"
- $msg = new-object System.Net.Mail.MailMessage
- $msg.From = "$scriptname@$env:COMPUTERNAME.com"
- $msg.To.Add("9365468667@txt.att.net")
- $msg.Subject = "Alert:  "
- $msg.Body = "`n10 minutes or less until the computer resumes, and 25 minutes until it locks."
- $smtpClient = new-object Net.Mail.SmtpClient($smtpServer)
- $smtpClient.Send($msg)
-  }
-
- else{
- Start-Sleep -Seconds 60
- $myshell.sendkeys(".")
- }
+    Start-Sleep -Seconds 60
+    $wshShell.SendKeys("{SCROLLLOCK}")
 }
 
-
-If ($choice -match 'l'){
-Lock-WorkStation
-}
-
-If ($choice -match 's')
-{
+switch ($choice) {
+'l' { Lock-WorkStation }
+'s' {
 powercfg.exe /hibernate off | Out-Null
-Set-SpeakerVolume -Direction Down -Amt 50
-&"$env:SystemRoot\System32\rundll32.exe" powrprof.dll,SetSuspendState Standby
+&"$env:SystemRoot\System32\rundll32.exe"powrprof.dll,SetSuspendState Standby
 }
-
-If ($choice -match 'p')
-{
+'p' {
 powercfg.exe /hibernate off | Out-Null
 Stop-Computer -Force
 }
-
-If ($choice -match 'h')
-{
+'h' {
 powercfg.exe /hibernate on | Out-Null
-Set-SpeakerVolume -Direction Down -Amt 50
-&"$env:SystemRoot\System32\rundll32.exe" powrprof.dll,SetSuspendState Hibernate
-}
-
-If ($choice -match 'n'){
+&"$env:SystemRoot\System32\rundll32.exe"powrprof.dll,SetSuspendState Hibernate
 }
 }
-
+}
 
 finally {
-Set-SpeakerVolume -Direction Down -Amt 50
+    Set-AudioDevice -PlaybackVolume $currentVolume
+    Write-Host "`n`nThe script has succesfully completed. Your computer will now resume it's normal operations, and lock per your domains' policy." -ForegroundColor Green
+    Read-Host "`nPress any key to exit"
 }
