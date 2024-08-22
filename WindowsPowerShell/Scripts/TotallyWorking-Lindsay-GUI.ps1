@@ -11,34 +11,34 @@ $form.StartPosition = 'CenterScreen'
 # Minutes label
 $minutesLabel = New-Object System.Windows.Forms.Label
 $minutesLabel.Location = New-Object System.Drawing.Point(10,20)
-$minutesLabel.Size = New-Object System.Drawing.Size(280,20)
-$minutesLabel.Text = 'How many minutes woudl you like to keep the computer active?'
+$minutesLabel.Size = New-Object System.Drawing.Size(380,20)
+$minutesLabel.Text = 'How many minutes would you like to keep the computer active?'
 $form.Controls.Add($minutesLabel)
 
 # Minutes box
 $minutesBox = New-Object System.Windows.Forms.TextBox
-$minutesBox.Location = New-Object System.Drawing.Point(10,40)
+$minutesBox.Location = New-Object System.Drawing.Point(10,50)
 $minutesBox.Size = New-Object System.Drawing.Size(100,20)
 $form.Controls.Add($minutesBox)
 
 # Action label
 $actionLabel = New-Object System.Windows.Forms.Label
-$actionLabel.Location = New-Object System.Drawing.Point(10,70)
-$actionLabel.Size = New-Object System.Drawing.Size(280,20)
+$actionLabel.Location = New-Object System.Drawing.Point(10,80)
+$actionLabel.Size = New-Object System.Drawing.Size(380,20)
 $actionLabel.Text = 'After the active time ends, your computer will:'
 $form.Controls.Add($actionLabel)
 
 # Action dropdown
 $actionDropDown = New-Object System.Windows.Forms.ComboBox
-$actionDropDown.Location = New-Object System.Drawing.Point(10,90)
+$actionDropDown.Location = New-Object System.Drawing.Point(10,110)
 $actionDropDown.Size = New-Object System.Drawing.Size(200,20)
 $actionDropDown.Items.AddRange(@('Do nothing', 'Hibernate', 'Sleep', 'Lock', 'Power off'))
 $form.Controls.Add($actionDropDown)
 
 # Output window
 $outputBox = New-Object System.Windows.Forms.TextBox
-$outputBox.Location = New-Object System.Drawing.Point(10,120)
-$outputBox.Size = New-Object System.Drawing.Size(360,200)
+$outputBox.Location = New-Object System.Drawing.Point(10,150)
+$outputBox.Size = New-Object System.Drawing.Size(360,160)
 $outputBox.Multiline = $true
 $outputBox.ScrollBars = 'Vertical'
 $outputBox.ReadOnly = $true
