@@ -8,8 +8,10 @@ Start-Transcript -Path $logFile -Append
 ### Set git path before continueing
 $env:PATH += ";C:\Program Files\Git\cmd"
 
+Write-Host "`nRunning PowershellSetup.ps1...`n" -ForegroundColor Magenta
+
 ### Clone windows repo
-Write-Host "Cloning windows repo..."
+Write-Host "Cloning windows repo..." -ForegroundColor Magenta
 $repoPath = Join-Path $env:USERPROFILE "Repos"
 $windowsRepoPath = Join-Path $repoPath "windows"
 
@@ -34,7 +36,7 @@ else {
 }
 
 ### Check if PowerShell 7 is installed
-Write-Host "Checking if PowerShell 7 is installed..."
+Write-Host "Checking if PowerShell 7 is installed..." -ForegroundColor Magenta
 
 $powershell7Info = winget list --id Microsoft.Powershell --accept-source-agreements --source winget
 if ($powershell7Info -match "Microsoft.PowerShell") {
@@ -42,10 +44,10 @@ if ($powershell7Info -match "Microsoft.PowerShell") {
 }
 else {
     ### Install PowerShell 7
-    Write-Host "PowerShell 7 is not installed. Installing..."
+    Write-Host "PowerShell 7 is not installed. Installing..." -ForegroundColor Magenta
     winget install --id Microsoft.Powershell --source winget --accept-source-agreements --accept-package-agreements
     if ($LASTEXITCODE -eq 0) {
-        Write-Host "PowerShell 7 installed successfully."
+        Write-Host "PowerShell 7 installed successfully." -ForegroundColor Green
     }
     else {
         Write-Error "Failed to install PowerShell 7. Exit code: $LASTEXITCODE"
@@ -54,7 +56,7 @@ else {
 }
 
 ### Symlink Windows PowerShell Profile
-Write-Host "Symlinking Windows PowerShell profile..."
+Write-Host "Symlinking Windows PowerShell profile..." -ForegroundColor Magenta
 $windowsPowershellFolder = Join-Path $env:USERPROFILE "Documents\WindowsPowerShell"
 $windowsPowershellTarget = Join-Path $windowsRepoPath "WindowsPowerShell"
 if (Test-Path -Path $windowsPowershellFolder) {
@@ -63,7 +65,7 @@ if (Test-Path -Path $windowsPowershellFolder) {
 New-Item -ItemType SymbolicLink -Path $windowsPowershellFolder -Value $windowsPowershellTarget -Force | Out-Null
 
 ### Symlink Windows 7 PowerShell Profile
-Write-Host "Symlinking Windows 7 PowerShell profile..."
+Write-Host "Symlinking Windows 7 PowerShell profile..." -ForegroundColor Magenta
 $windowsPowershell7Folder = Join-Path $env:USERPROFILE "Documents\PowerShell"
 $windowsPowershell7ProfileSource = Join-Path $windowsRepoPath "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
 $windowsPowershell7ProfileTarget = Join-Path $windowsPowershell7Folder "Microsoft.PowerShell_profile.ps1"
@@ -80,49 +82,52 @@ if (Test-Path -Path $windowsPowershell7ProfileTarget) {
 
 try {
     New-Item -ItemType SymbolicLink -Path $windowsPowershell7ProfileTarget -Value $windowsPowershell7ProfileSource -Force | Out-Null
-    Write-Host "Created symbolic link for PowerShell 7 profile."
+    Write-Host "Created symbolic link for PowerShell 7 profile." -ForegroundColor Green
 }
 catch {
     Write-Error "Failed to create symbolic link for PowerShell 7 profile. Error: $($_.Exception.Message)"
 }
 
 ### Symlink PowerShell profile to ISE profile
-Write-Host "Symlinking PowerShell ISE profile..."
+Write-Host "Symlinking PowerShell ISE profile..." -ForegroundColor Magenta
 $iseProfilePath = Join-Path $windowsPowershellFolder "Microsoft.PowerShellISE_profile.ps1"
 $iseProfileTarget = Join-Path $windowsRepoPath "WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
 if (Test-Path -Path $iseProfilePath) {
     Remove-Item -Path $iseProfilePath -Force -Confirm:$false
 }
 New-Item -ItemType SymbolicLink -Path $iseProfilePath -Value $iseProfileTarget -Force | Out-Null
+Write-Host "Symlinked Powershell ISE Profile successfully" -ForegroundColor Green
 
 ### Symlink Terminal Settings
-Write-Host "Symlinking terminal settings..."
+Write-Host "Symlinking terminal settings..." -ForegroundColor Magenta
 $terminalSettingsPath = Join-Path $env:USERPROFILE "AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
 $terminalSettingsTarget = Join-Path $windowsRepoPath "Terminal Settings\LocalState"
 if (Test-Path -Path $terminalSettingsPath) {
     Remove-Item -Path $terminalSettingsPath -Force -Recurse -Confirm:$false
 }
 New-Item -ItemType SymbolicLink -Path $terminalSettingsPath -Value $terminalSettingsTarget -Force | Out-Null
+Write-Host "Symlinked terminal settings successfully" -ForegroundColor Green
 
 ### Vim Stuff
 # Set up vimrc file
-Write-Host "Symlinking vimrc..."
+Write-Host "Symlinking vimrc..." -ForegroundColor Magenta
 $vimrcPath = "C:\tools\vim\_vimrc"
 $vimrcTarget = Join-Path $PSScriptRoot "configs\_vimrc"
 if (Test-Path -Path $vimrcPath) {
     Remove-Item -Path $vimrcPath -Force -Confirm:$false
 }
 New-Item -ItemType SymbolicLink -Path $vimrcPath -Value $vimrcTarget -Force | Out-Null
+Write-Host "Symlinked vimrc successfully" -ForegroundColor Green
 
 # Check for Vundle, download if it doesn't exist.
-Write-Host "Installing Vundle..."
+Write-Host "Installing Vundle..." -ForegroundColor Magenta
 $vundlePath = "C:\tools\vim\vim91\Vundle.vim"
 if (-Not (Test-Path $vundlePath)) {
     Write-Host "Vundle not found at $vundlePath. Cloning Vundle from GitHub..."
     $gitUrl = "https://github.com/VundleVim/Vundle.vim.git"
     git clone $gitUrl $vundlePath
     if ($?) {
-        Write-Host "Vundle was successfully cloned to $vundlePath."
+        Write-Host "Vundle was successfully cloned to $vundlePath." -ForegroundColor Green
     }
     else {
         Write-Error "Failed to clone Vundle."
@@ -134,11 +139,12 @@ else {
 }
 
 ### Install vim plugins with bundle
-Write-Host "Installing Vim Plugins..."
+Write-Host "Installing Vim Plugins..." -ForegroundColor Magenta
 vim -E -s -u "$vimrcPath" -c "BundleInstall" -c "qa!"
+Write-Host "Installed Vim plugins successfully" -ForegroundColor Green
 
 ### Install Fonts
-Write-Host "Installing fonts ..."
+Write-Host "Installing fonts ..." -ForegroundColor Magenta
 $fontsFolder = Join-Path $windowsRepoPath "fonts"
 Write-Host "Fonts folder: $fontsFolder"
 
@@ -164,6 +170,7 @@ if (Test-Path -Path $fontsFolder) {
             Write-Error "Failed to install font: $($font.Name)"
         }
     }
+Write-Host "Succesfully installed fonts" -ForegroundColor Green
 }
 else {
     Write-Warning "Fonts folder not found: $fontsFolder"
@@ -171,14 +178,14 @@ else {
 
 ### Set default font
 $defaultFont = "Hack Nerd Font Mono"
-Write-Host "Setting default font to " -NoNewline; Write-Host $defaultFont -ForegroundColor Yellow; Write-Host "..."
+Write-Host "Setting default font to " -ForegroundColor Magenta -NoNewline; Write-Host $defaultFont -ForegroundColor Yellow; Write-Host "..." -ForegroundColor Magenta
 
 if (!(Get-Module -ListAvailable -Name WindowsConsoleFonts)) {
     Write-Host "WindowsConsoleFonts module not found. Installing..."
 
     Install-Module -Name WindowsConsoleFonts -Scope CurrentUser -Force
 
-    Write-Host "WindowsConsoleFonts module installed successfully..."
+    Write-Host "WindowsConsoleFonts module installed successfully..." -ForegroundColor Green
 }
 
 try {
@@ -190,7 +197,7 @@ catch {
 }
 
 ### Source PowerShell profile
-Write-Host "Sourcing PowerShell Profile..."
+Write-Host "Sourcing PowerShell Profile..." -ForegroundColor Magenta
 if ($PSVersionTable.PSVersion.Major -ge 7) {
     $profilePath = Join-Path $powershellFolder "Microsoft.PowerShell_profile.ps1"
 } else {
@@ -199,12 +206,12 @@ if ($PSVersionTable.PSVersion.Major -ge 7) {
 
 if (Test-Path -Path $profilePath) {
     . $profilePath
-    Write-Host "PowerShell Profile sourced successfully."
+    Write-Host "PowerShell Profile sourced successfully." -ForegroundColor Green
 } else {
     Write-Warning "PowerShell Profile not found at $profilePath"
 }
 
-Write-Host "PowerShell Setup complete." -ForegroundColor green
+Write-Host "`nPowerShell Setup complete." -ForegroundColor green
 
 ### Stop logging
 Stop-Transcript

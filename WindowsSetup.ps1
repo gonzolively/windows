@@ -5,6 +5,8 @@ $scriptName = $MyInvocation.MyCommand.Name
 $logFile = $scriptName + "_" + "$(Get-Date -Format 'yyyyMMdd_HHmmss').log"
 Start-Transcript -Path $logFile -Append
 
+Write-Host "Running WindowsSetup.ps1..." -ForegroundColor Magenta
+
 ### Activate Windows
 $confirmActivation = Read-Host "Do you want to activate Windows? (Yes/No)"
 
@@ -17,14 +19,14 @@ else {
 }
 
 ### Install Cholatey
-Write-Host "Checking to see if Choclatey is installed..."
+Write-Host "Checking to see if Choclatey is installed..." -ForegroundColor Magenta
 if (-not (Get-Command -Name choco -ErrorAction SilentlyContinue)) {
     Write-Host "Chocolatey is not installed. Installing Chocolatey..."
 
     Set-ExecutionPolicy Bypass -Scope Process -Force
     [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-    Write-Host "Chocolatey has been installed successfully."
+    Write-Host "Chocolatey has been installed successfully." -ForegroundColor Green
 }
 else {
     Write-Host "Chocolatey is already installed."
@@ -35,7 +37,7 @@ $requiredPackages = @("oh-my-posh", "vim", "git", "notepadplusplus.install")
 
 $installedPackages = choco list --local-only | Select-String -Pattern "^\w"
 
-Write-Host "Installing Choclatey packages..."
+Write-Host "Installing Choclatey packages..." -ForegroundColor Magenta
 
 foreach ($package in $requiredPackages) {
     if ($installedPackages -notmatch "^$package\b") {
@@ -51,24 +53,24 @@ $gvimIconsPath = "C:\Users\Public\Desktop"
 $gvimIcons = Get-ChildItem -Path $gvimIconsPath -Filter "gvim*"
 
 if ($gvimIcons) {
-    Write-Host "Removing gvim icons from the desktop..."
+    Write-Host "Removing gvim icons from the desktop..." -ForegroundColor Magenta
     foreach ($icon in $gvimIcons) {
         Remove-Item -Path $icon.FullName -Force
     }
-    Write-Host "Cleanup completed."
+    Write-Host "Cleanup completed." -ForegroundColor Green
 }
 else {
     Write-Host "No gvim icons found on the desktop."
 }
 
 ### Check and install NuGet package provider
-Write-Host "Checking if NuGet package provider is installed..."
+Write-Host "Checking if NuGet package provider is installed..." -ForegroundColor Magenta
 if (!(Get-PackageProvider -Name NuGet -ErrorAction SilentlyContinue)) {
     Write-Host "NuGet package provider is not installed. Installing..."
 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
     Install-PackageProvider -Name NuGet -Force
-    Write-Host "NuGet package provider has been installed successfully."
+    Write-Host "NuGet package provider has been installed successfully." -Foreground Green
 }
 else {
     Write-Host "NuGet package provider is already installed."
@@ -78,12 +80,11 @@ else {
 $confirmWinUtil = Read-Host "Do you want to run WinUtil? (Yes/No)"
 
 if ($confirmWinUtil -eq "Yes" -or $confirmWinUtil -eq "Y") {
-    Write-Host "Activating Windows..."
     $wingetSettings = Join-Path $PSScriptRoot "configs\settings.json"
     $wingetSettingsTarget = "$env:LOCALAPPDATA\Packages\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe\LocalState\settings.json"
     $winutilSettings = Join-Path $PSScriptRoot "configs\winutil.json"
 
-    Write-Host "Adding winget settings to system..."
+    Write-Host "Adding winget settings to system..." -ForegroundColor Magenta
     if (Test-Path $wingetSettings) {
         if (Test-Path $wingetSettingsTarget) {
             Remove-Item $wingetSettingsTarget
@@ -91,7 +92,7 @@ if ($confirmWinUtil -eq "Yes" -or $confirmWinUtil -eq "Y") {
 
         Copy-Item -Path $wingetSettings -Destination $wingetSettingsTarget
 
-        Write-Host "Running WinUtil..."
+        Write-Host "Running WinUtil..." -ForegroundColor Magenta
         Invoke-RestMethod -useb https://christitus.com/win | iex
         # Disabling auto-config for now, not entirely sure I want these defaults to always run.
         #Invoke-Expression "& { $(Invoke-RestMethod christitus.com/win) } -Config $winutilSettings -Run"
@@ -112,7 +113,7 @@ $runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 scri
 if ($runPowershellSetup -eq "Yes" -or $runPowershellSetup -eq "Y") {
     $powershellSetupPath = Join-Path $PSScriptRoot "PowershellSetup.ps1"
     if (Test-Path $powershellSetupPath) {
-        Write-Host "Running PowershellSetup.ps1 script..."
+        Write-Host "Running PowershellSetup.ps1 script..." -ForegroundColor Magenta
         & $powershellSetupPath
     }
     else {
