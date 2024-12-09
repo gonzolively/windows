@@ -8,15 +8,15 @@ Set-PSReadlineOption -BellStyle None                                            
 $host.UI.RawUI.BufferSize = (New-Object System.Management.Automation.Host.Size(120,3000))   #Set scrollback buffer
 
 #Set home directory and path Powershell starts in
-Set-Location C:\Users\Knox
+Set-Location C:\Users\$Env:Username
 
 # Directories
-function downloads {Set-Location C:\Users\Knox\downloads}
-function docs {Set-Location C:\Users\Knox\documents}
-function desktop {Set-Location C:\Users\Knox\desktop}
-function home {Set-Location C:\Users\Knox}
-function repos {Set-location C:\Users\Knox\Repos}
-function tools {Set-Location C:\Users\Knox\Repos}
+function downloads {Set-Location C:\Users\$Env:Username\downloads}
+function docs {Set-Location C:\Users\$Env:Username\documents}
+function desktop {Set-Location C:\Users\$Env:Username\desktop}
+function home {Set-Location C:\Users\$Env:Username}
+function repos {Set-location C:\Users\$Env:Username\Repos}
+function tools {Set-Location C:\Users\$Env:Username\Repos}
 
 # Config Files location
 Set-Variable VIMRC C:\tools\vim\_vimrc

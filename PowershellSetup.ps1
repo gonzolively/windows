@@ -36,7 +36,7 @@ else {
 ### Check if PowerShell 7 is installed
 Write-Host "Checking if PowerShell 7 is installed..."
 
-$powershell7Info = winget list --id Microsoft.Powershell --exact --accept-source-agreements --source winget
+$powershell7Info = winget list --id Microsoft.Powershell --accept-source-agreements --source winget
 if ($powershell7Info -match "Microsoft.PowerShell") {
     Write-Host "PowerShell 7 is already installed."
 }
