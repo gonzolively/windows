@@ -8,7 +8,7 @@ Start-Transcript -Path $logFile -Append
 Write-Host "Running WindowsSetup.ps1..." -ForegroundColor Magenta
 
 ### Activate Windows
-$confirmActivation = Read-Host "Do you want to activate Windows? (Yes/No)"
+$confirmActivation = Read-Host "Do you want to activate Windows? (y/n)"
 
 if ($confirmActivation -eq "Yes" -or $confirmActivation -eq "Y") {
     Write-Host "Activating Windows..."
@@ -77,7 +77,7 @@ else {
 }
 
 ### Winget/Winutil Stuff
-$confirmWinUtil = Read-Host "Do you want to run WinUtil? (Yes/No)"
+$confirmWinUtil = Read-Host "Do you want to run WinUtil? (y/n)"
 
 if ($confirmWinUtil -eq "Yes" -or $confirmWinUtil -eq "Y") {
     $wingetSettings = Join-Path $PSScriptRoot "configs\settings.json"
@@ -108,7 +108,7 @@ else {
 }
 
 ### Prompt the user to choose whether to run the PowershellSetup.ps1 script
-$runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (Yes/No)"
+$runPowershellSetup = Read-Host "Do you want to run the PowershellSetup.ps1 script? (y/n)"
 
 if ($runPowershellSetup -eq "Yes" -or $runPowershellSetup -eq "Y") {
     $powershellSetupPath = Join-Path $PSScriptRoot "PowershellSetup.ps1"
