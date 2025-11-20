@@ -4,10 +4,32 @@
 #oh-my-posh init pwsh --config 'C:\Program Files (x86)\oh-my-posh\themes\powerlevel10k_lean.omp.json' | Invoke-Expression
 
 # Misc options
-Set-PSReadlineOption -BellStyle None                                                        #Disable bell
-$host.UI.RawUI.BufferSize = (New-Object System.Management.Automation.Host.Size(120,3000))   #Set scrollback buffer
+Set-PSReadlineOption -BellStyle None                                                        # Disable bell
 
-#Set home directory and path Powershell starts in
+# Safely set scrollback buffer without exceeding host limits
+$rawUI         = $Host.UI.RawUI
+$desiredWidth  = 120
+$desiredHeight = 3000
+
+$maxSize   = $rawUI.MaxPhysicalWindowSize
+$current   = $rawUI.BufferSize
+
+# Clamp to what the host can actually support
+$bufferWidth  = [Math]::Min($desiredWidth,  [int]$maxSize.Width)
+$bufferHeight = [Math]::Min($desiredHeight, [int]$maxSize.Height)
+
+if ($bufferWidth -gt 0 -and $bufferHeight -gt 0 -and
+    ($bufferWidth -ne $current.Width -or $bufferHeight -ne $current.Height)) {
+
+    try {
+        $rawUI.BufferSize = New-Object System.Management.Automation.Host.Size($bufferWidth, $bufferHeight)
+    }
+    catch {
+        Write-Verbose "Could not set buffer size to ${bufferWidth}x${bufferHeight}: $($_.Exception.Message)"
+    }
+}
+
+# Set home directory and path Powershell starts in
 Set-Location C:\Users\$Env:Username
 
 # Directories
@@ -47,7 +69,7 @@ function reload-profile {
 }
 
 function WinUtil {
-	iwr -useb https://christitus.com/win | iex
+    iwr -useb https://christitus.com/win | iex
 }
 
 function unzip ($file) {
@@ -154,8 +176,8 @@ function Get-RandomPassword {
 }
 
 function Remote-PSS {
-	$whichcomputer=read-host "Which computer would you like to connect to?"
-	Enter-PSSession -computername $whichcomputer -credential 'CORP\sa-klively'
+    $whichcomputer=read-host "Which computer would you like to connect to?"
+    Enter-PSSession -computername $whichcomputer -credential 'CORP\sa-klively'
  }
   
   
@@ -174,16 +196,16 @@ function Reset-IseTab {
  
             Write-Verbose "Saving $($_.FullPath)"           
             try {
-                	$_.Save()             
-                	$FileList  += $_     
+                    $_.Save()             
+                    $FileList  += $_     
                 } 
-			catch [System.Management.Automation.MethodInvocationException] {
-                	# Save will fail saying that you need to SaveAs because the 
-                	# file doesn't have a path.
-                	Write-Verbose "Saving $($_.FullPath) Failed"                           
-            	}            
+            catch [System.Management.Automation.MethodInvocationException] {
+                    # Save will fail saying that you need to SaveAs because the 
+                    # file doesn't have a path.
+                    Write-Verbose "Saving $($_.FullPath) Failed"                           
+                }            
         }   
-			elseif ($_.IsSaved) {            
+            elseif ($_.IsSaved) {            
             $FileList  += $_
         }
     }
@@ -213,29 +235,4 @@ function Reset-IseTab {
         #Only remove the tab if all of the files closed.
         $psISE.PowerShellTabs.Remove($Current)
     }
-}
-
-function Get-MovieLists {
-
-  function Format-FileSize() {
-      Param ([int64]$size)
-      [string]::Format("{0:0.00}", $size/1GB)
-  }
-
-  $ip = Get-SmbConnection | Where-Object -Property ShareName -Match "Data" | foreach {$_.ServerName}
-  $files = "\\$ip\Data\Movies"
-  $fileCount = (Get-ChildItem $files | Measure-Object).Count
-  $totalSize = [math]::Round((Get-Childitem $files | Measure-Object -Sum Length).Sum / 1GB,2)
-  $avgSizePerFile = [math]::Round($totalSize/$fileCount, 2)
-
-  # Write movie lists
-  $moviesByName = "$DOWNLOADS\allMoviesByName.txt"
-  Get-ChildItem $files | Select-Object Name, @{Name="Size(GB)";Expression={Format-FileSize($_.length)}} | Sort-Object -Property Name | Out-File $moviesByName
-  Add-Content -path $moviesByName -value "-------------------------------------------------------------------"
-  Add-Content -path $moviesByName -value "Average File Size                                             $avgSizePerFile"
-
-  $moviesBySize = "$DOWNLOADS\allMoviesBySize.txt"
-  Get-ChildItem $files | Select-Object Name, @{Name="Size(GB)";Expression={Format-FileSize($_.length)}} | Sort-Object { [float]$_."Size(GB)"} -Descending| Out-File $moviesBySize
-  Add-Content -path $moviesBySize -value "------------------------------------------------------------------"
-  Add-Content -path $moviesBySize -value "Average File Size                                            $avgSizePerFile"
 }
