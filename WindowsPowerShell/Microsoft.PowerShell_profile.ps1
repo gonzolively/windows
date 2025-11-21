@@ -37,7 +37,9 @@ function downloads {Set-Location C:\Users\$Env:Username\downloads}
 function documents {Set-Location C:\Users\$Env:Username\documents}
 function desktop {Set-Location C:\Users\$Env:Username\desktop}
 function home {Set-Location C:\Users\$Env:Username}
+function printenv {Get-ChildItem Env: | Sort-Object Name}
 function repos {Set-location C:\Users\$Env:Username\Repos}
+function scripts {Set-location C:\Users\$Env:Username\Repos\windows\WindowsPowerShell\Scripts}
 function tools {Set-Location C:\tools}
 
 # Config Files location
