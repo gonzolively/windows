@@ -1,7 +1,11 @@
-# Misc options
-Set-PSReadlineOption -BellStyle None                                                        # Disable bell
+###############################################
+# Core Host / Profile Settings
+###############################################
 
-# Safely set scrollback buffer without exceeding host limits
+# Disable the bell
+Set-PSReadlineOption -BellStyle None
+
+# Console buffer (clamped to host limits)
 $rawUI         = $Host.UI.RawUI
 $desiredWidth  = 120
 $desiredHeight = 3000
@@ -9,7 +13,6 @@ $desiredHeight = 3000
 $maxSize   = $rawUI.MaxPhysicalWindowSize
 $current   = $rawUI.BufferSize
 
-# Clamp to what the host can actually support
 $bufferWidth  = [Math]::Min($desiredWidth,  [int]$maxSize.Width)
 $bufferHeight = [Math]::Min($desiredHeight, [int]$maxSize.Height)
 
@@ -24,227 +27,226 @@ if ($bufferWidth -gt 0 -and $bufferHeight -gt 0 -and
     }
 }
 
-# Set home directory and path Powershell starts in
-Set-Location C:\Users\$Env:Username
+# Start in home directory
+Set-Location $HOME
 
-# Config Files location
-Set-Variable VIMRC C:\tools\vim\_vimrc
+# Editor / config paths
+$global:VIMRC = 'C:\tools\vim\_vimrc'
 
-# Alias'
-Set-Alias -Name reboot -Value Restart-Computer
-Set-Alias -Name touch -Value New-Item
-####################### SNAPINS & MODULES ##########################################################
-# Import Modules and External Profiles
-$modules = @("Terminal-Icons", "posh-git")
+###############################################
+# Modules
+###############################################
+$modules = @('posh-git', 'Terminal-Icons')
 
 foreach ($module in $modules) {
-    if (-not (Get-Module -ListAvailable -Name $module)) {
-        Install-Module -Name $module -Scope CurrentUser -Force -SkipPublisherCheck
+    if (Get-Module -ListAvailable -Name $module) {
+        Import-Module $module -ErrorAction SilentlyContinue
     }
-    Import-Module $module
-}
-####################### CUSTOM FUNCTIONS #############################################################
-# Directories
-function downloads {Set-Location C:\Users\$Env:Username\downloads}
-function documents {Set-Location C:\Users\$Env:Username\documents}
-function desktop {Set-Location C:\Users\$Env:Username\desktop}
-function home {Set-Location C:\Users\$Env:Username}
-function repos {Set-location C:\Users\$Env:Username\Repos}
-function scripts {Set-location C:\Users\$Env:Username\Repos\windows\WindowsPowerShell\Scripts}
-function tools {Set-Location C:\tools}
-
-# Package Management
-function ChocoUpgrade {
-choco upgrade all -y --except="vim" --ignore-checksums
+    else {
+        Write-Verbose "Module '$module' not found. Install with: Install-Module $module -Scope CurrentUser"
+    }
 }
 
-# System Utilities
-function Get-Path($file) {
-  $path = (Get-Item $file).FullName
-  $path | Set-Clipboard
-  Write-Host "Path for '$file' successfully copied to the clipboard." -ForegroundColor Green
+###############################################
+# Aliases (Alphabetical)
+###############################################
+Set-Alias reboot Restart-Computer
+Set-Alias touch  New-Item
+
+###############################################
+# Directory / Navigation Helpers (Alphabetical)
+###############################################
+function desktop   { Set-Location "$HOME\Desktop" }
+function documents { Set-Location "$HOME\Documents" }
+function downloads { Set-Location "$HOME\Downloads" }
+function home      { Set-Location $HOME }
+function repos     { Set-Location "$HOME\Repos" }
+function scripts   { Set-Location "$HOME\Repos\windows\WindowsPowerShell\Scripts" }
+function tools     { Set-Location 'C:\tools' }
+
+###############################################
+# Git Helpers (Alphabetical)
+###############################################
+function GitDeleteBranch {
+    param([Parameter(Mandatory)][string]$Branch)
+    $ErrorActionPreference = 'SilentlyContinue'
+    git branch -d $Branch
+    git push origin --delete $Branch
 }
 
-function pbc($file){
-  cat $file | Set-Clipboard
-  Write-Host "Successfully copied contents of $file to the clipboard" -ForegroundColor Green
+###############################################
+# Linux-like Helpers (Alphabetical)
+###############################################
+function df       { Get-Volume }
+
+function grep {
+    param([string]$Regex,[string]$Dir)
+    if ($Dir) { Get-ChildItem $Dir | Select-String $Regex }
+    else      { $input | Select-String $Regex }
 }
 
-function printenv {Get-ChildItem Env: | Sort-Object Name}
+function symlink  { param([string]$Target,[string]$Link); New-Item -Path $Link -ItemType SymbolicLink -Value $Target -Force }
 
-function reload-profile {
-    & $profile
-}
+function tail     { param([string]$Path,[int]$n=10); Get-Content $Path -Tail $n }
 
-function WinUtil {
-    iwr -useb https://christitus.com/win | iex
-}
+function which    { param([string]$Command); (Get-Command $Command).Path }
 
-function word($file) {
-  Start-Process winword.exe $file
-}
-
-function unzip ($file) {
-    Write-Output("Extracting", $file, "to", $pwd)
-    $fullFile = Get-ChildItem -Path $pwd -Filter $file | ForEach-Object { $_.FullName }
-    Expand-Archive -Path $fullFile -DestinationPath $pwd
-}
-
-# Network Utilities
-function Get-PubIP { (Invoke-WebRequest http://ifconfig.me/ip).Content }
-
+###############################################
+# Network Utilities (Alphabetical)
+###############################################
 function flushdns { Clear-DnsClientCache }
 
-# Linux alias'
-function grep($regex, $dir) {
-    if ( $dir ) {
-        Get-ChildItem $dir | select-string $regex
+function Get-PubIP {
+    try {
+        (Invoke-WebRequest 'https://ifconfig.me/ip' -UseBasicParsing -TimeoutSec 5).Content.Trim()
+    }
+    catch {
+        Write-Warning "Unable to retrieve public IP: $($_.Exception.Message)"
+    }
+}
+
+###############################################
+# Package Management (Alphabetical)
+###############################################
+function ChocoUpgrade { choco upgrade all -y --except="vim" --ignore-checksums }
+
+###############################################
+# System Utilities (Alphabetical)
+###############################################
+function Add-HeaderToScript {
+    if (-not $psISE) {
+        Write-Warning "This function only works inside the PowerShell ISE."
         return
     }
-    $input | select-string $regex
-}
 
-function df {
-    get-volume
-}
-
-function tail {
-  param($Path, $n = 10)
-  Get-Content $Path -Tail $n
-}
-
-function which($command) {
-(Get-Command $command).Path
-}
-
-function symlink ($target, $link) {
-    New-Item -Path $link -ItemType SymbolicLink -Value $target -force
-}
-
-# General
-function hist {
-Get-Content (Get-PSReadlineOption).HistorySavePath
-}
-
-function Get-EnvironmentVariables() {
-Get-ChildItem env:* | sort-object name
-}
-
-function GitDeleteBranch ($branch) {
-$ErrorActionPreference = "SilentlyContinue"
-git branch -d $branch
-git push origin --delete $branch
-}
-
-# Get a list of all of the .NET assemblies available
-function Get-NetTypes() {
-$search=read-host "`nPlease Enter a search string"
-$results=[AppDomain]::CurrentDomain.GetAssemblies() |  Foreach-Object { $_.GetTypes() | where-object {$_.FullName -match $search}}
-$results | select Name,NameSpace | Sort-Object -Property Name
-}
-
-# use notepad++ instead of notepad
-function notepad($file)
-{
-  if ($file -eq $null)
-    {
-        & 'C:\Program Files\Notepad++\notepad++.exe';
-    }
-    else
-    {
-        & 'C:\Program Files\Notepad++\notepad++.exe' $file;
-    }
-}
-
-# Sleeps computer if powercfg /hibernate off; hibernates if powercfg /hibernate on
-function Sleep-Computer {
-    &"$env:SystemRoot\System32\rundll32.exe" powrprof.dll,SetSuspendState Standby
-}
-
-# This function adds headers to each of my scripts
-function Add-HeaderToScript { 
-$header = @" 
+    $header = @"
 # ----------------------------------------------------------------------------------
-# Script:   $(split-path -Path $psISE.CurrentFile.FullPath -Leaf) 
-# Author:   Knox Lively 
+# Script:   $(Split-Path -Path $psISE.CurrentFile.FullPath -Leaf)
+# Author:   Knox Lively
 # Date:     $(Get-Date -Format "MMMM dd, yyyy")
-# Comments: 
+# Comments:
 # ----------------------------------------------------------------------------------
 
-"@ 
- $psise.CurrentFile.Editor.InsertText($header)
+"@
+    $psise.CurrentFile.Editor.InsertText($header)
+}
+
+function Get-EnvironmentVariables { Get-ChildItem Env:* | Sort-Object Name }
+
+function Get-NetTypes {
+    $search = Read-Host "`nPlease enter a search string"
+    $results = [AppDomain]::CurrentDomain.GetAssemblies() |
+        ForEach-Object {
+            $_.GetTypes() | Where-Object { $_.FullName -match $search }
+        }
+    $results | Select-Object Name, Namespace | Sort-Object -Property Name
+}
+
+function Get-Path {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Alias('FullName')]
+        [string]$Path
+    )
+    process {
+        $fullPath = (Get-Item $Path).FullName
+        $fullPath | Set-Clipboard
+        Write-Host "Path for '$fullPath' successfully copied to the clipboard." -ForegroundColor Green
+    }
 }
 
 function Get-RandomPassword {
     param(
-        $length = 14,
-        $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!$%&?*@'
+        [int]$length = 14,
+        [string]$characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789!$%&?*@'
     )
-    # select random characters
-    $random = 1..$length | ForEach-Object { Get-Random -Maximum $characters.length }
-    # output random pwd
+    $random = 1..$length | ForEach-Object { Get-Random -Maximum $characters.Length }
     $private:ofs = ""
-    [String]$characters[$random]
+    [string]$characters[$random]
 }
 
+function hist { Get-Content (Get-PSReadlineOption).HistorySavePath }
+
+function notepad {
+    param([string]$Path)
+    $npp = 'C:\Program Files\Notepad++\notepad++.exe'
+    if (-not (Test-Path $npp)) {
+        Write-Warning "Notepad++ not found at '$npp'"
+        return
+    }
+    if ($Path) { & $npp $Path } else { & $npp }
+}
+
+function pbc {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string]$Path)
+    Get-Content -Raw -Path $Path | Set-Clipboard
+    Write-Host "Successfully copied contents of '$Path' to the clipboard" -ForegroundColor Green
+}
+
+function printenv { Get-ChildItem Env: | Sort-Object Name }
+
+function reload-profile { & $PROFILE }
+
 function Remote-PSS {
-    $whichcomputer=read-host "Which computer would you like to connect to?"
-    Enter-PSSession -computername $whichcomputer -credential 'CORP\sa-klively'
- }
-  
-  
+    $whichcomputer = Read-Host "Which computer would you like to connect to?"
+    Enter-PSSession -ComputerName $whichcomputer -Credential 'CORP\sa-klively'
+}
+
 function Reset-IseTab {
- $ErrorActionPreference = "silentlycontinue"
-    Param(
+    if (-not $psISE) {
+        Write-Warning "This function only works inside the PowerShell ISE."
+        return
+    }
+
+    param(
         [switch]$SaveFiles,
         [ScriptBlock]$InvokeInNewTab
     )
- 
-    $Current = $psISE.CurrentPowerShellTab    
+
+    $ErrorActionPreference = 'SilentlyContinue'
+    $Current = $psISE.CurrentPowerShellTab
     $FileList = @()
-            
-    $Current.Files | ForEach-Object {        
+
+    $Current.Files | ForEach-Object {
         if ($SaveFiles -and (-not $_.IsSaved)) {
- 
-            Write-Verbose "Saving $($_.FullPath)"           
-            try {
-                    $_.Save()             
-                    $FileList  += $_     
-                } 
-            catch [System.Management.Automation.MethodInvocationException] {
-                    # Save will fail saying that you need to SaveAs because the 
-                    # file doesn't have a path.
-                    Write-Verbose "Saving $($_.FullPath) Failed"                           
-                }            
-        }   
-            elseif ($_.IsSaved) {            
-            $FileList  += $_
+            try { $_.Save(); $FileList += $_ } catch {}
+        } elseif ($_.IsSaved) {
+            $FileList += $_
         }
     }
-                   
-    $NewTab = $psISE.PowerShellTabs.Add() 
-    $FileList | ForEach-Object { 
+
+    $NewTab = $psISE.PowerShellTabs.Add()
+    $FileList | ForEach-Object {
         $NewTab.Files.Add($_.FullPath) | Out-Null
-        $Current.Files.Remove($_) 
+        $Current.Files.Remove($_)
     }
- 
-    # If a code block was to be sent to the new tab, add it here. 
-    #  Think module loading or dot-sourcing something to put your environment
-    # correct for the specific debug session.
+
     if ($InvokeInNewTab) {
-         
-        Write-Verbose "Will call this after the Tab Loads:`n $InvokeInNewTab"
-         
-        # Wait for the new tab to be ready to run more commands.
-        While (-not $NewTab.CanInvoke) {
-            Start-Sleep -Seconds 1
-        }
- 
+        while (-not $NewTab.CanInvoke) { Start-Sleep 1 }
         $NewTab.Invoke($InvokeInNewTab)
     }
- 
-    if ($Current.Files.Count -eq 0) {        
-        #Only remove the tab if all of the files closed.
+
+    if ($Current.Files.Count -eq 0) {
         $psISE.PowerShellTabs.Remove($Current)
     }
+}
+
+function Sleep-Computer {
+    &"$env:SystemRoot\System32\rundll32.exe" powrprof.dll,SetSuspendState Standby
+}
+
+function unzip {
+    param([Parameter(Mandatory)][string]$File)
+    Write-Output "Extracting $File to $PWD"
+    $fullFile = Get-ChildItem -Path $PWD -Filter $File | ForEach-Object { $_.FullName }
+    Expand-Archive -Path $fullFile -DestinationPath $PWD
+}
+
+function WinUtil { iwr -UseBasicParsing -UseB https://christitus.com/win | iex }
+
+function word {
+    param([Parameter(Mandatory)][string]$Path)
+    Start-Process winword.exe $Path
 }
