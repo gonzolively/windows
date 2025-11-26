@@ -1,8 +1,3 @@
-# Set oh-my-posh prompt
-# Use "Get-PoshThemes" to preview themes
-#oh-my-posh init pwsh --config 'C:\Program Files (x86)\oh-my-posh\themes\iterm2.omp.json' | Invoke-Expression
-#oh-my-posh init pwsh --config 'C:\Program Files (x86)\oh-my-posh\themes\powerlevel10k_lean.omp.json' | Invoke-Expression
-
 # Misc options
 Set-PSReadlineOption -BellStyle None                                                        # Disable bell
 
@@ -32,23 +27,12 @@ if ($bufferWidth -gt 0 -and $bufferHeight -gt 0 -and
 # Set home directory and path Powershell starts in
 Set-Location C:\Users\$Env:Username
 
-# Directories
-function downloads {Set-Location C:\Users\$Env:Username\downloads}
-function documents {Set-Location C:\Users\$Env:Username\documents}
-function desktop {Set-Location C:\Users\$Env:Username\desktop}
-function home {Set-Location C:\Users\$Env:Username}
-function printenv {Get-ChildItem Env: | Sort-Object Name}
-function repos {Set-location C:\Users\$Env:Username\Repos}
-function scripts {Set-location C:\Users\$Env:Username\Repos\windows\WindowsPowerShell\Scripts}
-function tools {Set-Location C:\tools}
-
 # Config Files location
 Set-Variable VIMRC C:\tools\vim\_vimrc
 
 # Alias'
 Set-Alias -Name reboot -Value Restart-Computer
 Set-Alias -Name touch -Value New-Item
-
 ####################### SNAPINS & MODULES ##########################################################
 # Import Modules and External Profiles
 $modules = @("Terminal-Icons", "posh-git")
@@ -60,18 +44,44 @@ foreach ($module in $modules) {
     Import-Module $module
 }
 ####################### CUSTOM FUNCTIONS #############################################################
+# Directories
+function downloads {Set-Location C:\Users\$Env:Username\downloads}
+function documents {Set-Location C:\Users\$Env:Username\documents}
+function desktop {Set-Location C:\Users\$Env:Username\desktop}
+function home {Set-Location C:\Users\$Env:Username}
+function repos {Set-location C:\Users\$Env:Username\Repos}
+function scripts {Set-location C:\Users\$Env:Username\Repos\windows\WindowsPowerShell\Scripts}
+function tools {Set-Location C:\tools}
+
 # Package Management
 function ChocoUpgrade {
 choco upgrade all -y --except="vim" --ignore-checksums
 }
 
 # System Utilities
+function Get-Path($file) {
+  $path = (Get-Item $file).FullName
+  $path | Set-Clipboard
+  Write-Host "Path for '$file' successfully copied to the clipboard." -ForegroundColor Green
+}
+
+function pbc($file){
+  cat $file | Set-Clipboard
+  Write-Host "Successfully copied contents of $file to the clipboard" -ForegroundColor Green
+}
+
+function printenv {Get-ChildItem Env: | Sort-Object Name}
+
 function reload-profile {
     & $profile
 }
 
 function WinUtil {
     iwr -useb https://christitus.com/win | iex
+}
+
+function word($file) {
+  Start-Process winword.exe $file
 }
 
 function unzip ($file) {
