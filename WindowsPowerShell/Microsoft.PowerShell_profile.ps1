@@ -32,6 +32,7 @@ Set-Location $HOME
 
 # Editor / config paths
 $global:VIMRC = 'C:\tools\vim\_vimrc'
+$global:CLAUDE_CONFIG = "$HOME\AppData\Roaming\Claude\claude_desktop_config.json"
 
 ###############################################
 # Modules
