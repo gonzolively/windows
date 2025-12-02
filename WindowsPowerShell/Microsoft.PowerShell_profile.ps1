@@ -132,6 +132,96 @@ function Add-HeaderToScript {
     $psise.CurrentFile.Editor.InsertText($header)
 }
 
+function Base64 {
+    param (
+        [Parameter(Position = 0, Mandatory = $true)]
+        [string]$File,
+
+        [string]$OutputFile,
+
+        [switch]$Encode,
+        [switch]$Decode
+    )
+
+    if ($Encode) {
+        try {
+            $resolvedInput = (Resolve-Path -LiteralPath $File -ErrorAction Stop).ProviderPath
+            $bytes = [System.IO.File]::ReadAllBytes($resolvedInput)
+            $base64 = [System.Convert]::ToBase64String($bytes)
+            Set-Clipboard -Value $base64
+            Write-Host "✅ Encoded '$resolvedInput' to Base64 and copied to clipboard."
+
+            if ($OutputFile) {
+                if (-not [System.IO.Path]::IsPathRooted($OutputFile)) {
+                    $OutputFile = Join-Path (Get-Location) $OutputFile
+                }
+                Set-Content -Path $OutputFile -Value $base64
+                Write-Host "💾 Also saved Base64 output to '$OutputFile'."
+            }
+        }
+        catch {
+            Write-Error "Encoding failed: $_"
+        }
+    }
+    elseif ($Decode) {
+        if (-not $OutputFile) {
+            Write-Error "For decoding, please specify -OutputFile."
+            return
+        }
+
+        try {
+            $resolvedInput = (Resolve-Path -LiteralPath $File -ErrorAction Stop).ProviderPath
+            $base64 = Get-Content -Path $resolvedInput -Raw
+            $bytes = [System.Convert]::FromBase64String($base64)
+
+            if (-not [System.IO.Path]::IsPathRooted($OutputFile)) {
+                $OutputFile = Join-Path (Get-Location) $OutputFile
+            }
+
+            [System.IO.File]::WriteAllBytes($OutputFile, $bytes)
+            Write-Host "✅ Decoded Base64 from '$resolvedInput' to '$OutputFile'."
+        }
+        catch {
+            Write-Error "Decoding failed: $_"
+        }
+    }
+    else {
+        Write-Host "⚠️ Please specify either -Encode or -Decode."
+    }
+}
+
+function excel {
+    [CmdletBinding()]
+    param([Parameter(Mandatory, Position = 0, ValueFromRemainingArguments = $true)][string[]]$Path)
+    $rawPath = $Path -join ' '
+    $resolved = (Resolve-Path -LiteralPath $rawPath -ErrorAction Stop).ProviderPath
+    $arg = "`"$resolved`""
+    Start-Process excel.exe -ArgumentList $arg
+}
+
+function powerpoint {
+    [CmdletBinding()]
+    param([Parameter(Mandatory, Position = 0, ValueFromRemainingArguments = $true)][string[]]$Path)
+    $rawPath = $Path -join ' '
+    $resolved = (Resolve-Path -LiteralPath $rawPath -ErrorAction Stop).ProviderPath
+    $arg = "`"$resolved`""
+    Start-Process powerpnt.exe -ArgumentList $arg
+}
+
+function word {
+    [CmdletBinding()]
+    param([Parameter(Mandatory, Position = 0, ValueFromRemainingArguments = $true)][string[]]$Path)
+    $rawPath = $Path -join ' '
+    $resolved = (Resolve-Path -LiteralPath $rawPath -ErrorAction Stop).ProviderPath
+    $arg = "`"$resolved`""
+    Start-Process winword.exe -ArgumentList $arg
+}
+
+function foxit {
+    param([Parameter(Mandatory)][string]$Path)
+    Start-Process "C:\Program Files\Foxit Software\Foxit PDF Reader\FoxitPDFReader.exe" $Path
+}
+
 function Get-EnvironmentVariables { Get-ChildItem Env:* | Sort-Object Name }
 
 function Get-NetTypes {
@@ -195,45 +285,6 @@ function Remote-PSS {
     Enter-PSSession -ComputerName $whichcomputer -Credential 'CORP\sa-klively'
 }
 
-function Reset-IseTab {
-    if (-not $psISE) {
-        Write-Warning "This function only works inside the PowerShell ISE."
-        return
-    }
-
-    param(
-        [switch]$SaveFiles,
-        [ScriptBlock]$InvokeInNewTab
-    )
-
-    $ErrorActionPreference = 'SilentlyContinue'
-    $Current = $psISE.CurrentPowerShellTab
-    $FileList = @()
-
-    $Current.Files | ForEach-Object {
-        if ($SaveFiles -and (-not $_.IsSaved)) {
-            try { $_.Save(); $FileList += $_ } catch {}
-        } elseif ($_.IsSaved) {
-            $FileList += $_
-        }
-    }
-
-    $NewTab = $psISE.PowerShellTabs.Add()
-    $FileList | ForEach-Object {
-        $NewTab.Files.Add($_.FullPath) | Out-Null
-        $Current.Files.Remove($_)
-    }
-
-    if ($InvokeInNewTab) {
-        while (-not $NewTab.CanInvoke) { Start-Sleep 1 }
-        $NewTab.Invoke($InvokeInNewTab)
-    }
-
-    if ($Current.Files.Count -eq 0) {
-        $psISE.PowerShellTabs.Remove($Current)
-    }
-}
-
 function Sleep-Computer {
     &"$env:SystemRoot\System32\rundll32.exe" powrprof.dll,SetSuspendState Standby
 }
@@ -246,8 +297,3 @@ function unzip {
 }
 
 function WinUtil { iwr -UseBasicParsing -UseB https://christitus.com/win | iex }
-
-function word {
-    param([Parameter(Mandatory)][string]$Path)
-    Start-Process winword.exe $Path
-}
